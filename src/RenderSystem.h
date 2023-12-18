@@ -46,7 +46,7 @@ class RenderSystem {
 
   ~RenderSystem() = default;
   RenderSystem() = delete;
-  explicit RenderSystem(float scaleFactor);
+  explicit RenderSystem(float scaleFactor, float radius_scale);
 
  private:
   float m_scale_factor;

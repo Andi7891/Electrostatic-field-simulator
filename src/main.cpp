@@ -113,14 +113,23 @@ void control_panel(ChargeSystem &charge_system, Cursor_Point &cursor) {
 
   ImGui::Separator();
 
+
   int index = 1;
   const char *items[] = {"Pico", "Nano", "Micro", "Mili"};
 
-  static const char *current_item[2] = {items[charge_system.getChargesList()[0].scale],
-                                        items[charge_system.getChargesList()[1].scale]};
+  std::vector<const char*> current_item = {};
+  std::vector<int> current_scale = {};
+  for (const auto& charge : charge_system.getChargesList()) {
+    const char* temp_scale = items[charge.scale];
+    current_item.push_back(temp_scale);
+    current_scale.push_back(charge.scale);
+  }
 
-  static int current_scale[2] = {charge_system.getChargesList()[0].scale,
-                                 charge_system.getChargesList()[1].scale};
+  //static const char *current_item[2] = {items[charge_system.getChargesList()[0].scale],
+    //                                    items[charge_system.getChargesList()[1].scale]};
+
+  //static int current_scale[2] = {charge_system.getChargesList()[0].scale,
+    //                             charge_system.getChargesList()[1].scale};
 
   for (auto &charge : charge_system.getChargesList()) {
 
@@ -208,23 +217,25 @@ int main(int argc, char *argv[]) {
   Init(currentScale);
   float newScale = currentScale;
 
-  InputSystem input_system(10.f);
-  RenderSystem render_system(10.f);
-  GridSystem grid_system(50, 50, BLACK, BLACK, BLACK);
+  float GLOBAL_SCALE = 10.f;
+  InputSystem input_system(GLOBAL_SCALE);
+  RenderSystem render_system(GLOBAL_SCALE, GLOBAL_SCALE * 8.f);
+  GridSystem grid_system(50, (int)GLOBAL_SCALE * 5, BLACK, BLACK, BLACK);
   ChargeSystem charge_system;
 
   charge_system.setConstants(8.854817178, PICO, 1);
 
-  charge_system.addCharge(Vector2{0, 5}, 10, NANO, 0.1, RED);
-  charge_system.addCharge(Vector2{0, -5}, -10, NANO, 0.1, BLUE);
-  //charge_system.addCharge(Vector2{0, -10}, -10, NANO, 0.1, BLUE);
+  charge_system.addCharge(Vector2{0, 10}, -30, NANO, 0.1, BLUE);
+  charge_system.addCharge(Vector2{0, -10}, -30, NANO, 0.1, GRAY);
+  charge_system.addCharge(Vector2{10, 0}, 30, NANO, 0.1, RED);
+  charge_system.addCharge(Vector2{-10, 0}, 30, NANO, 0.1, ORANGE);
 
 
   charge_system.addCursor(Vector2{0,0}, 0.05f, YELLOW, true);
   //charge_system.addCursor(Vector2{5,0}, 0.05f, RED, false);
 
   Features features = {};
-  float camera_scalar = 4.f;
+  float camera_scalar = 5.f;
 
   Camera2D camera = {0};
   camera.offset = {(float) GetScreenWidth() / 2.0f, (float) GetScreenHeight() / 2.0f};
@@ -247,6 +258,16 @@ int main(int argc, char *argv[]) {
 
     input_system.update_input(camera.zoom);
     camera.offset = {(float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f};
+
+    //Drag charges
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+      for (auto& charge : charge_system.getChargesList()) {
+        if (CheckCollisionPointCircle(input_system.getRefMousePos(), charge.position, charge.radius * GLOBAL_SCALE)) {
+          charge.position = input_system.getRefMousePos();
+          break;
+        }
+      }
+    }
 
     if (input_system.KeysStatus.space)
       charge_system.getMainCursor().position = input_system.getRefMousePos();

@@ -1,6 +1,6 @@
 #include "RenderSystem.h"
 
-RenderSystem::RenderSystem(float scaleFactor) : m_scale_factor(scaleFactor) {
+RenderSystem::RenderSystem(float scaleFactor, float radius_scale) : m_scale_factor(scaleFactor), m_radius_scale(radius_scale) {
 
 }
 
@@ -71,7 +71,6 @@ void RenderSystem::update(KeysStatus &keys_status,
                           ChargeSystem &charge_system,
                           Cursor_Point &cursor,
                           Features &features) {
-  m_radius_scale = m_scale_factor * 10.f;
 
   charge_system.compute_e(&features);
 
@@ -79,9 +78,8 @@ void RenderSystem::update(KeysStatus &keys_status,
 
   m_vector_render_list.clear();
 
-  //TODO different colours
   for (const auto &vec : cursor.vectors) {
-    Vector temp_vector = {refined_cursor_position, Vector2Add(refined_cursor_position,
+    Vector temp_vector = {refined_cursor_position, Vector2Add(Vector2Zero(),
                                                               Vector2{vec.head.x* m_scale_factor,
                                                                       vec.head.y * -m_scale_factor}), vec.color};
     m_vector_render_list.push_back(temp_vector);
