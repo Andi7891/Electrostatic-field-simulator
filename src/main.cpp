@@ -113,23 +113,22 @@ void control_panel(ChargeSystem &charge_system, Cursor_Point &cursor) {
 
   ImGui::Separator();
 
-
   int index = 1;
   const char *items[] = {"Pico", "Nano", "Micro", "Mili"};
 
-  std::vector<const char*> current_item = {};
+  std::vector<const char *> current_item = {};
   std::vector<int> current_scale = {};
-  for (const auto& charge : charge_system.getChargesList()) {
-    const char* temp_scale = items[charge.scale];
+  for (const auto &charge : charge_system.getChargesList()) {
+    const char *temp_scale = items[charge.scale];
     current_item.push_back(temp_scale);
     current_scale.push_back(charge.scale);
   }
 
   //static const char *current_item[2] = {items[charge_system.getChargesList()[0].scale],
-    //                                    items[charge_system.getChargesList()[1].scale]};
+  //                                    items[charge_system.getChargesList()[1].scale]};
 
   //static int current_scale[2] = {charge_system.getChargesList()[0].scale,
-    //                             charge_system.getChargesList()[1].scale};
+  //                             charge_system.getChargesList()[1].scale};
 
   for (auto &charge : charge_system.getChargesList()) {
 
@@ -159,7 +158,9 @@ void control_panel(ChargeSystem &charge_system, Cursor_Point &cursor) {
     charge.scale = Scale(current_scale[index - 1]);
 
     ImGui::SliderFloat(TextFormat("Particle no %d charge (%s)", index, current_item[index - 1]),
-                       &charge.charge_unscaled, -100.f, 100.f);
+                       &charge.charge_unscaled,
+                       -100.f,
+                       100.f);
 
     //Radius
     ImGui::SliderFloat(TextFormat("Particle no %d radius (m)", index), &charge.radius, 0.f, 100.f);
@@ -217,10 +218,12 @@ int main(int argc, char *argv[]) {
   Init(currentScale);
   float newScale = currentScale;
 
+  ImFont *font_Drag = nullptr;
+
   float GLOBAL_SCALE = 10.f;
   InputSystem input_system(GLOBAL_SCALE);
   RenderSystem render_system(GLOBAL_SCALE, GLOBAL_SCALE * 8.f);
-  GridSystem grid_system(50, (int)GLOBAL_SCALE * 5, BLACK, BLACK, BLACK);
+  GridSystem grid_system(50, (int) GLOBAL_SCALE * 5, BLACK, BLACK, BLACK);
   ChargeSystem charge_system;
 
   charge_system.setConstants(8.854817178, PICO, 1);
@@ -230,8 +233,7 @@ int main(int argc, char *argv[]) {
   charge_system.addCharge(Vector2{10, 0}, 30, NANO, 0.1, RED);
   charge_system.addCharge(Vector2{-10, 0}, 30, NANO, 0.1, ORANGE);
 
-
-  charge_system.addCursor(Vector2{0,0}, 0.05f, YELLOW, true);
+  charge_system.addCursor(Vector2{0, 0}, 0.05f, YELLOW, true);
   //charge_system.addCursor(Vector2{5,0}, 0.05f, RED, false);
 
   Features features = {};
@@ -250,24 +252,14 @@ int main(int argc, char *argv[]) {
     if (features.auto_zoom) {
       camera.zoom = ImClamp(((float) GetScreenHeight() / (float) GetScreenWidth()) * camera_scalar, 1.0f, 10.f);
     } else {
-      camera.zoom += ((float) GetMouseWheelMove() * 0.05f);
+      camera.zoom += ((float) GetMouseWheelMove() * 0.125f);
     }
 
     if (camera.zoom > 10.0f) camera.zoom = 10.0f;
     else if (camera.zoom < 0.5f) camera.zoom = 0.5f;
 
     input_system.update_input(camera.zoom);
-    camera.offset = {(float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f};
-
-    //Drag charges
-    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-      for (auto& charge : charge_system.getChargesList()) {
-        if (CheckCollisionPointCircle(input_system.getRefMousePos(), charge.position, charge.radius * GLOBAL_SCALE)) {
-          charge.position = input_system.getRefMousePos();
-          break;
-        }
-      }
-    }
+    camera.offset = {(float) GetScreenWidth() / 2.0f, (float) GetScreenHeight() / 2.0f};
 
     if (input_system.KeysStatus.space)
       charge_system.getMainCursor().position = input_system.getRefMousePos();
@@ -294,7 +286,10 @@ int main(int argc, char *argv[]) {
       currentScale = newScale;
       ImGuiIO &io = ImGui::GetIO();
       io.Fonts->Clear();
-      ImFont *font = io.Fonts->AddFontFromFileTTF(R"(C:\Windows\Fonts\Arial.ttf)",newScale * 10);
+      ImFont *font = io.Fonts->AddFontFromFileTTF(R"(C:\Windows\Fonts\Arial.ttf)", newScale * 12);
+      font_Drag = io.Fonts->AddFontFromFileTTF(R"(C:\Windows\Fonts\Arial.ttf)", newScale * 14);
+      if (font_Drag == nullptr)
+        font_Drag = ImGui::GetDefaultFont();
       if (font == nullptr)
         io.Fonts->AddFontDefault();
 
@@ -325,6 +320,49 @@ int main(int argc, char *argv[]) {
 
     if (features.showHelpPanel)
       help_panel(features.showHelpPanel);
+
+    //Drag charges
+    //TODO One of the messiest code ever, but it works perfect HOW?
+    // (also first time ran and worked)
+    static size_t last_pressed_element = -1;
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+      for (auto &charge : charge_system.getChargesList()) {
+        if (CheckCollisionPointCircle(input_system.getRefMousePos(), charge.position, charge.radius * GLOBAL_SCALE)
+            || (last_pressed_element != -1 && &charge == &charge_system.getChargesList()[last_pressed_element])) {
+          charge.position = input_system.getRefMousePos();
+
+          ImVec2 windowPos = ImVec2{GetMousePosition().x, GetMousePosition().y - (camera_scalar * camera.zoom * 1.1f)};
+          ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, ImVec2{0.5f, 1.f});
+          auto windowFlags =
+              ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoCollapse
+                  | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBackground
+                  | ImGuiWindowFlags_NoDecoration;
+
+          ImGui::PushFont(font_Drag);
+          ImGui::Begin("Cursor_position", nullptr, windowFlags);
+          ImGui::TextColored(ImVec4{0, 0, 0, 255},
+                             "%.2f %.2f",
+                             input_system.getRefMousePos().x,
+                             input_system.getRefMousePos().y);
+          ImGui::End();
+          ImGui::PopFont();
+
+          //TODO high performance hit, but takes time to refactor this function
+          //Find the pressed element
+          for (size_t index = 0; index < charge_system.getChargesList().size(); index++) {
+            if (&charge == &charge_system.getChargesList()[index]) {
+              last_pressed_element = index;
+            }
+          }
+          if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+            last_pressed_element = -1;
+          //It is used as a height layer, so the entities don't get stuck one in the other
+          break;
+        }
+      }
+    } else {
+      last_pressed_element = -1;
+    }
 
     rlImGuiEnd();
 

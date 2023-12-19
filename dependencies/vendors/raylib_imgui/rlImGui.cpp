@@ -409,12 +409,12 @@ void rlImGuiBeginInitImGui() {
   io.ConfigDockingWithShift = true;
 
   io.Fonts->Clear();
-  io.Fonts->ClearFonts();
   float baseSize = 20.f;
   float dpiScale = (GetWindowScaleDPI().x == GetWindowScaleDPI().y) ? GetWindowScaleDPI().x : 1.f;
-  float resScale = (float) GetScreenHeight() / (float) GetScreenWidth();
+  float resScale = (float) GetScreenWidth() / (float) GetScreenHeight();
   float fontScale = baseSize * resScale * dpiScale;
   ImFont *font = io.Fonts->AddFontFromFileTTF(R"(C:\Windows\Fonts\Arial.ttf)", fontScale);
+
   if (font == nullptr)
     io.Fonts->AddFontDefault();
 }
@@ -437,7 +437,7 @@ float UI_SCALING(float scale) {
   style.ScrollbarRounding = 0.0f;
   style.GrabRounding      = 0.0f;
   style.TabRounding       = 0.0f;
-  style.ScaleAllSizes(scale_);
+  style.ScaleAllSizes(scale_ * 0.9f);
   return scale_;
 }
 

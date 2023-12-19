@@ -25,11 +25,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="896696ec-5c36-47b2-b92e-0a44dfc29cce" name="Changes" comment="1.0V">
+    <list default="true" id="896696ec-5c36-47b2-b92e-0a44dfc29cce" name="Changes" comment="2.0 Complete overhaul of the charge calculation algorithm. Complete support for multiple point charges. Drag and drop added.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ChargeSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/ChargeSystem.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/RenderSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/RenderSystem.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/RenderSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/RenderSystem.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dependencies/vendors/raylib_imgui/rlImGui.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/dependencies/vendors/raylib_imgui/rlImGui.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -50,6 +48,9 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="ProjectErrors" />
@@ -142,7 +143,8 @@
       <workItem from="1702908045575" duration="127000" />
       <workItem from="1702928200172" duration="10736000" />
       <workItem from="1702940934967" duration="50000" />
-      <workItem from="1702941084016" duration="3000" />
+      <workItem from="1702941084016" duration="140000" />
+      <workItem from="1702942439846" duration="4679000" />
     </task>
     <task id="LOCAL-00001" summary="1.0V">
       <option name="closed" value="true" />
@@ -152,7 +154,15 @@
       <option name="project" value="LOCAL" />
       <updated>1702904882320</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="2.0 Complete overhaul of the charge calculation algorithm. Complete support for multiple point charges. Drag and drop added.">
+      <option name="closed" value="true" />
+      <created>1702941190594</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1702941190594</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -169,7 +179,8 @@
       <path value="$PROJECT_DIR$" />
     </ignored-roots>
     <MESSAGE value="1.0V" />
-    <option name="LAST_COMMIT_MESSAGE" value="1.0V" />
+    <MESSAGE value="2.0 Complete overhaul of the charge calculation algorithm. Complete support for multiple point charges. Drag and drop added." />
+    <option name="LAST_COMMIT_MESSAGE" value="2.0 Complete overhaul of the charge calculation algorithm. Complete support for multiple point charges. Drag and drop added." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
