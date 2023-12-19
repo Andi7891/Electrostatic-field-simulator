@@ -7,6 +7,8 @@
 #include "ChargeSystem.h"
 #include "imgui_internal.h"
 
+#include <string>
+
 void Init(float &currentScale) {
   SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
   InitWindow(1, 1, "Electrostatics simulator");
@@ -200,10 +202,15 @@ void help_panel(bool &showHelpPanel) {
 
   ImGui::Separator();
 
-  ImGui::Text("R for toggling the result panel");
-  ImGui::Text("H for toggling the help panel");
-  ImGui::Text("MOUSE_WHEEL for manual zoom");
+  ImGui::Text("R to toggle the result panel");
+  ImGui::Text("H to toggle the help panel");
   ImGui::Text("SPACE to toggle cursor moving");
+  ImGui::Separator();
+  ImGui::Text("MOUSE_WHEEL for manual zoom");
+  ImGui::Text("MOUSE_LEFT_HOLD for dragging charges");
+  ImGui::Text("MOUSE_RIGHT/C for adding charges");
+  ImGui::Text("SHIFT + MOUSE_LEFT/C for removing the charge");
+  ImGui::Separator();
   ImGui::Text("ESC for exit");
 
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.f);
@@ -213,12 +220,14 @@ void help_panel(bool &showHelpPanel) {
   ImGui::End();
 }
 
+////////////////////////////////////////////////////ENTRY_POINT///////////////////////////////////////////////
 int main(int argc, char *argv[]) {
   float currentScale = 0.f;
   Init(currentScale);
   float newScale = currentScale;
 
   ImFont *font_Drag = nullptr;
+  std::vector<Color> culor_list_order = {Color(RED), Color(BLUE), Color(ORANGE), Color(GRAY)};
 
   float GLOBAL_SCALE = 10.f;
   InputSystem input_system(GLOBAL_SCALE);
@@ -228,10 +237,10 @@ int main(int argc, char *argv[]) {
 
   charge_system.setConstants(8.854817178, PICO, 1);
 
-  charge_system.addCharge(Vector2{0, 10}, -30, NANO, 0.1, BLUE);
-  charge_system.addCharge(Vector2{0, -10}, -30, NANO, 0.1, GRAY);
-  charge_system.addCharge(Vector2{10, 0}, 30, NANO, 0.1, RED);
-  charge_system.addCharge(Vector2{-10, 0}, 30, NANO, 0.1, ORANGE);
+  //charge_system.addCharge(Vector2{0, 10}, -30, NANO, 0.1, BLUE);
+  //charge_system.addCharge(Vector2{0, -10}, -30, NANO, 0.1, GRAY);
+  //charge_system.addCharge(Vector2{10, 0}, 30, NANO, 0.1, RED);
+  //charge_system.addCharge(Vector2{-10, 0}, 30, NANO, 0.1, ORANGE);
 
   charge_system.addCursor(Vector2{0, 0}, 0.05f, YELLOW, true);
   //charge_system.addCursor(Vector2{5,0}, 0.05f, RED, false);
@@ -321,8 +330,31 @@ int main(int argc, char *argv[]) {
     if (features.showHelpPanel)
       help_panel(features.showHelpPanel);
 
+    static int color_index = 0;
+    //Adding charges
+    if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON) || (IsKeyPressed(KEY_C) && !IsKeyDown(KEY_LEFT_SHIFT))) {
+      //Change color for each element
+      if (color_index == culor_list_order.size())
+        color_index = 0;
+      charge_system.addCharge(input_system.getRefMousePos(), 10, NANO, 0.1, culor_list_order[color_index]);
+      color_index++;
+    }
+
+    //Remove charges
+    if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON) || (IsKeyPressed(KEY_C) && IsKeyDown(KEY_LEFT_SHIFT))) {
+      for(const auto& charge : charge_system.getChargesList()) {
+        if (CheckCollisionPointCircle(input_system.getRefMousePos(), charge.position, charge.radius * GLOBAL_SCALE)) {
+          //Color order decreased by one
+          color_index--;
+          if (color_index < 0)
+            color_index = 0;
+          charge_system.removeCharge(charge.index);
+        }
+      }
+    }
+
     //Drag charges
-    //TODO One of the messiest code ever, but it works perfect HOW?
+    //TODO One of the messiest code ever, but it works perfectly (almost)
     // (also first time ran and worked)
     static size_t last_pressed_element = -1;
     if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {

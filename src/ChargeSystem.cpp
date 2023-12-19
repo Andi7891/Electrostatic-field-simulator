@@ -27,6 +27,8 @@ struct CursorResult {
 };
 */
 
+int Charge_particle::global_index = 0;
+
 struct CursorResult {
   double r;
   double mag_E;
@@ -126,6 +128,11 @@ cursor_results.emplace_back(result_2);
 std::vector<CursorResult> Compute_Vectors_E(Cursor_Point &cursor,
                                             std::vector<Charge_particle> &m_charge_list,
                                             Constants &constants) {
+  if (m_charge_list.empty()) {
+    std::vector<CursorResult> cursor_results = {};
+    cursor.e_res_vec = Vector2Zero();
+    return cursor_results;
+  }
   //TODO add support for multiple cursors
   cursor.vectors.clear();
   std::vector<CursorResult> cursor_results = {};

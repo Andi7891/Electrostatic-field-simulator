@@ -25,9 +25,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="896696ec-5c36-47b2-b92e-0a44dfc29cce" name="Changes" comment="2.0 Complete overhaul of the charge calculation algorithm. Complete support for multiple point charges. Drag and drop added.">
+    <list default="true" id="896696ec-5c36-47b2-b92e-0a44dfc29cce" name="Changes" comment="3.0 The most wrong code ever for drag and drop of the point charges, but it works almost perfectly. Good for now.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dependencies/vendors/raylib_imgui/rlImGui.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/dependencies/vendors/raylib_imgui/rlImGui.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ChargeSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/ChargeSystem.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ChargeSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/ChargeSystem.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -38,7 +39,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -144,7 +145,11 @@
       <workItem from="1702928200172" duration="10736000" />
       <workItem from="1702940934967" duration="50000" />
       <workItem from="1702941084016" duration="140000" />
-      <workItem from="1702942439846" duration="4679000" />
+      <workItem from="1702942439846" duration="4711000" />
+      <workItem from="1702968556373" duration="1262000" />
+      <workItem from="1702975826310" duration="3594000" />
+      <workItem from="1702979738562" duration="1581000" />
+      <workItem from="1702981912359" duration="864000" />
     </task>
     <task id="LOCAL-00001" summary="1.0V">
       <option name="closed" value="true" />
@@ -162,7 +167,15 @@
       <option name="project" value="LOCAL" />
       <updated>1702941190594</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="3.0 The most wrong code ever for drag and drop of the point charges but it works almost perfectly. Good for now.">
+      <option name="closed" value="true" />
+      <created>1702947200010</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1702947200010</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -180,14 +193,15 @@
     </ignored-roots>
     <MESSAGE value="1.0V" />
     <MESSAGE value="2.0 Complete overhaul of the charge calculation algorithm. Complete support for multiple point charges. Drag and drop added." />
-    <option name="LAST_COMMIT_MESSAGE" value="2.0 Complete overhaul of the charge calculation algorithm. Complete support for multiple point charges. Drag and drop added." />
+    <MESSAGE value="3.0 The most wrong code ever for drag and drop of the point charges but it works almost perfectly. Good for now." />
+    <option name="LAST_COMMIT_MESSAGE" value="3.0 The most wrong code ever for drag and drop of the point charges but it works almost perfectly. Good for now." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/main.cpp</url>
-          <line>22</line>
+          <line>24</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
       </breakpoints>

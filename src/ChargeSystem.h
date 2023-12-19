@@ -51,16 +51,23 @@ enum Scale {
 struct Charge_particle {
   Vector2 position;
   float charge_unscaled;
-  //double charge;
   Scale scale;
   float radius;
   Color color;
+  int index;
+
+  static int global_index;
 
   Charge_particle(Vector2 position, float charge, Scale scale, float radius, Color color) : position{position},
                                                                                             charge_unscaled(charge),
                                                                                             radius{radius},
                                                                                             color{color},
-                                                                                            scale{scale} {}
+                                                                                            scale{scale} {
+    index = global_index;
+    global_index++;
+  }
+
+  static int& getGlobalIndex() { return global_index; }
 };
 
 struct Cursor_Point {
@@ -94,6 +101,15 @@ class ChargeSystem {
 
   void addCharge(Vector2 position, double charge, Scale scale, float radius, Color color);
   void addCursor(Vector2 position, float radius, Color color, bool mainCursor);
+
+  void removeCharge(int index) {
+    for (auto &charge : m_charge_list) {
+      if (charge.index == index) {
+        m_charge_list.erase(m_charge_list.begin() + index);
+        Charge_particle::getGlobalIndex() -= 1;
+      }
+    }
+  }
 
   void setConstants(double e0, Scale scale, double er);
   Constants &getConstants() { return m_constants; }
