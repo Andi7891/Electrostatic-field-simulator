@@ -25,10 +25,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="896696ec-5c36-47b2-b92e-0a44dfc29cce" name="Changes" comment="3.0 The most wrong code ever for drag and drop of the point charges, but it works almost perfectly. Good for now.">
+    <list default="true" id="896696ec-5c36-47b2-b92e-0a44dfc29cce" name="Changes" comment="4.0 Add charges and remove charges at runtime.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dependencies/vendors/raylib/include/raylib.h" beforeDir="false" afterPath="$PROJECT_DIR$/dependencies/vendors/raylib/include/raylib.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dependencies/vendors/raylib/include/raymath.h" beforeDir="false" afterPath="$PROJECT_DIR$/dependencies/vendors/raylib/include/raymath.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dependencies/vendors/raylib/include/rlgl.h" beforeDir="false" afterPath="$PROJECT_DIR$/dependencies/vendors/raylib/include/rlgl.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dependencies/vendors/raylib/lib/raylib.dll" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dependencies/vendors/raylib_imgui/driusstraight.ttf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dependencies/vendors/raylib_imgui/rlImGui.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/dependencies/vendors/raylib_imgui/rlImGui.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ChargeSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/ChargeSystem.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ChargeSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/ChargeSystem.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -39,7 +44,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -149,7 +154,15 @@
       <workItem from="1702968556373" duration="1262000" />
       <workItem from="1702975826310" duration="3594000" />
       <workItem from="1702979738562" duration="1581000" />
-      <workItem from="1702981912359" duration="864000" />
+      <workItem from="1702981912359" duration="977000" />
+      <workItem from="1702982911524" duration="634000" />
+      <workItem from="1702987016679" duration="458000" />
+      <workItem from="1702989615285" duration="27000" />
+      <workItem from="1702992888099" duration="10000" />
+      <workItem from="1703007673315" duration="2375000" />
+      <workItem from="1703015811775" duration="475000" />
+      <workItem from="1703016315110" duration="178000" />
+      <workItem from="1703028197908" duration="3359000" />
     </task>
     <task id="LOCAL-00001" summary="1.0V">
       <option name="closed" value="true" />
@@ -175,7 +188,15 @@
       <option name="project" value="LOCAL" />
       <updated>1702947200010</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="4.0 Add charges and remove charges at runtime.">
+      <option name="closed" value="true" />
+      <created>1702982830188</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1702982830188</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -187,6 +208,17 @@
     <isAutomaticFoundErrors value="true" />
     <isAutomaticFoundErrors value="true" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <ignored-roots>
       <path value="$PROJECT_DIR$" />
@@ -194,18 +226,8 @@
     <MESSAGE value="1.0V" />
     <MESSAGE value="2.0 Complete overhaul of the charge calculation algorithm. Complete support for multiple point charges. Drag and drop added." />
     <MESSAGE value="3.0 The most wrong code ever for drag and drop of the point charges but it works almost perfectly. Good for now." />
-    <option name="LAST_COMMIT_MESSAGE" value="3.0 The most wrong code ever for drag and drop of the point charges but it works almost perfectly. Good for now." />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/src/main.cpp</url>
-          <line>24</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="4.0 Add charges and remove charges at runtime." />
+    <option name="LAST_COMMIT_MESSAGE" value="4.0 Add charges and remove charges at runtime." />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -42,89 +42,6 @@ struct CursorResult {
   double res_E_value;
 };
 
-
-//std::vector<CursorResult> helperFunction(Cursor_Point& cursor, std::vector<Charge_particle>& m_charge_list, Constants& m_constants) {
-//cursor.vectors.clear();
-//std::vector<CursorResult> cursor_results = {};
-
-/*
-auto copy_cursor = cursor;
-for (const auto& charge : m_charge_list) {
-  CursorResult result = {};
-  //Scaling
-  double charge_charge = charge.charge_unscaled;
-  applyScale(charge_charge, charge.scale);
-
-  //Position calculation
-  result.rel_pos = (copy_cursor.position.x - charge.position.x) / (charge.position.y - copy_cursor.position.y);
-  result.radian = atan(result.rel_pos);
-  result.angle = RAD_TO_DEG(result.radian);
-
-  //Electric field calculation
-  result.e1_p = charge_charge / (4 * PI * m_constants.m_e);
-  result.e1 = result.e1_p * (1 / sqrt(pow(pow(copy_cursor.position.x, 2) + pow((copy_cursor.position.y - charge.position.y), 2), 2)));
-
-  //Converting to vectors
-  Vector2 res_vec = {(float) (sin(result.radian) * result.e1),
-                      (float)(cos(result.radian) * result.e1)};
-  result.resVec = res_vec;
-  cursor_resVec = Vector2Add(cursor_resVec, res_vec);
-
-  //Storing results for gui
-  cursor_results.emplace_back(result);
-}
-*/
-
-/*
-CursorResult result_1 = {};
-
-//Scaling
-double charge_1 = m_charge_list[0].charge_unscaled;
-applyScale(charge_1, m_charge_list[0].scale);
-
-result_1.rel_pos = (cursor.position.x - m_charge_list[0].position.x) / (m_charge_list[0].position.y - cursor.position.y);
-result_1.radian = atan(result_1.rel_pos);
-result_1.angle = RAD_TO_DEG(result_1.radian);
-
-result_1.e_p = charge_1 / (4 * PI * m_constants.m_e);
-result_1.e = result_1.e_p * (1 / sqrt(pow(pow(cursor.position.x, 2) + pow((cursor.position.y - m_charge_list[0].position.y), 2), 2)));
-
-result_1.resVec.x = (float) (sin(result_1.radian) * result_1.e);
-result_1.resVec.y = (float) (-cos(result_1.radian) * result_1.e);
-
-//TODO create constructor for render_vector and replace push_back with emplace_back for performance reasons
-cursor.vectors.push_back(Vector{Vector2{cursor.position.x, cursor.position.y},
-                            Vector2{result_1.resVec.x, result_1.resVec.y},
-                            RED});
-cursor_results.emplace_back(result_1);
-
-CursorResult result_2 = {};
-
-//Scaling
-double charge_2 = m_charge_list[1].charge_unscaled;
-applyScale(charge_2, m_charge_list[1].scale);
-
-result_2.rel_pos = (cursor.position.x - m_charge_list[1].position.x) / abs((m_charge_list[1].position.y - cursor.position.y));
-result_2.radian = atan(result_2.rel_pos);
-result_2.angle = RAD_TO_DEG(result_2.radian);
-
-result_2.e_p = charge_2 / (4 * PI * m_constants.m_e);
-result_2.e = result_2.e_p * (1 / sqrt(pow(pow(cursor.position.x, 2) + pow((cursor.position.y - m_charge_list[1].position.y), 2), 2)));
-
-result_2.resVec.x = (float) (sin(result_2.radian) * result_2.e);
-result_2.resVec.y = (float) (cos(result_2.radian) * result_2.e);
-
-Vector2 res_vec = Vector2Add(result_1.resVec, result_2.resVec);
-cursor.e_res_vec = res_vec;
-
-cursor.vectors.push_back(Vector{Vector2{cursor.position.x, cursor.position.y},
-                                Vector2{result_2.resVec.x, result_2.resVec.y},
-                                BLUE});
-cursor_results.emplace_back(result_2);
-*/
-//return cursor_results;
-//}
-
 std::vector<CursorResult> Compute_Vectors_E(Cursor_Point &cursor,
                                             std::vector<Charge_particle> &m_charge_list,
                                             Constants &constants) {
@@ -133,7 +50,7 @@ std::vector<CursorResult> Compute_Vectors_E(Cursor_Point &cursor,
     cursor.e_res_vec = Vector2Zero();
     return cursor_results;
   }
-  //TODO add support for multiple cursors
+
   cursor.vectors.clear();
   std::vector<CursorResult> cursor_results = {};
 

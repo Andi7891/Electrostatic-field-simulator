@@ -405,6 +405,7 @@ void rlImGuiBeginInitImGui() {
   //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;    // Enable Gamepad Controls
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
   //io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
+  //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
   io.IniFilename = nullptr;
   io.ConfigDockingWithShift = true;
 

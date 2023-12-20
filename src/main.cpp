@@ -227,7 +227,7 @@ int main(int argc, char *argv[]) {
   float newScale = currentScale;
 
   ImFont *font_Drag = nullptr;
-  std::vector<Color> culor_list_order = {Color(RED), Color(BLUE), Color(ORANGE), Color(GRAY)};
+  std::vector<Color> color_list_order = {Color(RED), Color(BLUE), Color(ORANGE), Color(GRAY), Color(GREEN), Color(MAROON)};
 
   float GLOBAL_SCALE = 10.f;
   InputSystem input_system(GLOBAL_SCALE);
@@ -237,13 +237,7 @@ int main(int argc, char *argv[]) {
 
   charge_system.setConstants(8.854817178, PICO, 1);
 
-  //charge_system.addCharge(Vector2{0, 10}, -30, NANO, 0.1, BLUE);
-  //charge_system.addCharge(Vector2{0, -10}, -30, NANO, 0.1, GRAY);
-  //charge_system.addCharge(Vector2{10, 0}, 30, NANO, 0.1, RED);
-  //charge_system.addCharge(Vector2{-10, 0}, 30, NANO, 0.1, ORANGE);
-
   charge_system.addCursor(Vector2{0, 0}, 0.05f, YELLOW, true);
-  //charge_system.addCursor(Vector2{5,0}, 0.05f, RED, false);
 
   Features features = {};
   float camera_scalar = 5.f;
@@ -261,7 +255,8 @@ int main(int argc, char *argv[]) {
     if (features.auto_zoom) {
       camera.zoom = ImClamp(((float) GetScreenHeight() / (float) GetScreenWidth()) * camera_scalar, 1.0f, 10.f);
     } else {
-      camera.zoom += ((float) GetMouseWheelMove() * 0.125f);
+      if (IsKeyDown(KEY_LEFT_CONTROL))
+        camera.zoom += ((float) GetMouseWheelMove() * 0.125f);
     }
 
     if (camera.zoom > 10.0f) camera.zoom = 10.0f;
@@ -286,8 +281,6 @@ int main(int argc, char *argv[]) {
     BeginMode2D(camera);
     grid_system.render();
 
-//TODO imgui before rendering system?
-
     rlImGuiSetContext();
     newScale = ((float) GetScreenHeight() / (float) GetScreenWidth()) * 4.0f;
     if (newScale != currentScale) {
@@ -306,6 +299,7 @@ int main(int argc, char *argv[]) {
     }
 
     rlImGuiBegin();
+
     ImGui::DockSpaceOverViewport(nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
     if (!features.showHelpPanel) {
       render_system.update(input_system.KeysStatus, charge_system, charge_system.getMainCursor(), features);
@@ -332,17 +326,17 @@ int main(int argc, char *argv[]) {
 
     static int color_index = 0;
     //Adding charges
-    if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON) || (IsKeyPressed(KEY_C) && !IsKeyDown(KEY_LEFT_SHIFT))) {
+    if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON) || (IsKeyPressed(KEY_C) && !IsKeyDown(KEY_LEFT_SHIFT))) {
       //Change color for each element
-      if (color_index == culor_list_order.size())
+      if (color_index == color_list_order.size())
         color_index = 0;
-      charge_system.addCharge(input_system.getRefMousePos(), 10, NANO, 0.1, culor_list_order[color_index]);
+      charge_system.addCharge(input_system.getRefMousePos(), 10, NANO, 0.1, color_list_order[color_index]);
       color_index++;
     }
 
     //Remove charges
-    if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON) || (IsKeyPressed(KEY_C) && IsKeyDown(KEY_LEFT_SHIFT))) {
-      for(const auto& charge : charge_system.getChargesList()) {
+    if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON) || (IsKeyPressed(KEY_C) && IsKeyDown(KEY_LEFT_SHIFT))) {
+      for (const auto &charge : charge_system.getChargesList()) {
         if (CheckCollisionPointCircle(input_system.getRefMousePos(), charge.position, charge.radius * GLOBAL_SCALE)) {
           //Color order decreased by one
           color_index--;
@@ -355,14 +349,13 @@ int main(int argc, char *argv[]) {
 
     //Drag charges
     //TODO One of the messiest code ever, but it works perfectly (almost)
-    // (also first time ran and worked)
+    float shift_scale = 2;
     static size_t last_pressed_element = -1;
     if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
       for (auto &charge : charge_system.getChargesList()) {
         if (CheckCollisionPointCircle(input_system.getRefMousePos(), charge.position, charge.radius * GLOBAL_SCALE)
             || (last_pressed_element != -1 && &charge == &charge_system.getChargesList()[last_pressed_element])) {
           charge.position = input_system.getRefMousePos();
-
           ImVec2 windowPos = ImVec2{GetMousePosition().x, GetMousePosition().y - (camera_scalar * camera.zoom * 1.1f)};
           ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, ImVec2{0.5f, 1.f});
           auto windowFlags =

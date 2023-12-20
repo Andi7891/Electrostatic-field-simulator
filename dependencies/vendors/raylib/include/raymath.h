@@ -59,7 +59,9 @@
 // Function specifiers definition
 #if defined(RAYMATH_IMPLEMENTATION)
     #if defined(_WIN32) && defined(BUILD_LIBTYPE_SHARED)
-        #define RMAPI __declspec(dllexport) extern inline // We are building raylib as a Win32 shared library (.dll).
+        #define RMAPI __declspec(dllexport) extern inline // We are building raylib as a Win32 shared library (.dll)
+    #elif defined(BUILD_LIBTYPE_SHARED)
+        #define RMAPI __attribute__((visibility("default"))) // We are building raylib as a Unix shared library (.so/.dylib)
     #elif defined(_WIN32) && defined(USE_LIBTYPE_SHARED)
         #define RMAPI __declspec(dllimport)         // We are using raylib as a Win32 shared library (.dll)
     #else
@@ -460,25 +462,6 @@ RMAPI Vector2 Vector2MoveTowards(Vector2 v, Vector2 target, float maxDistance)
     result.y = v.y + dy/dist*maxDistance;
 
     return result;
-}
-
-RMAPI Vector2 Vector2MoveTowardsCustom(Vector2 v, Vector2 target, float Distance)
-{
-  Vector2 result = { 0 };
-
-  float dx = target.x - v.x;
-  float dy = target.y - v.y;
-  float value = (dx*dx) + (dy*dy);
-
-  if (value == 0 || Distance >= 0)
-    return target;
-
-  float dist = sqrtf(value);
-
-  result.x = v.x + dx/dist*Distance;
-  result.y = v.y + dy/dist*Distance;
-
-  return result;
 }
 
 // Invert the given vector
