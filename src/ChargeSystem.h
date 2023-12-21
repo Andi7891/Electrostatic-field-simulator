@@ -1,8 +1,6 @@
 #ifndef ESFS_SRC_CHARGESYSTEM_H_
 #define ESFS_SRC_CHARGESYSTEM_H_
 
-//TODO More than 2 charges at the same time
-
 #include "raylib.h"
 #include "raymath.h"
 
@@ -13,6 +11,9 @@
 
 #ifndef RENDER_VECTOR
 #define RENDER_VECTOR
+
+#include <iostream>
+
 struct Vector {
   Vector2 tail;
   Vector2 head;
@@ -67,32 +68,62 @@ struct Charge_particle {
     global_index++;
   }
 
-  static int& getGlobalIndex() { return global_index; }
+  static int &getGlobalIndex() { return global_index; }
+};
+
+struct CursorResult {
+  double r;
+  double mag_E;
+  double e_x;
+  double e_y;
+  double E_x;
+  double E_y;
+  double abs_mag_E;
+  double pos_E_x;
+  double pos_E_y;
+  double res_E_value;
 };
 
 struct Cursor_Point {
-  Vector2 e_res_vec;
-  Color color;
-  float radius;
-  Vector2 position;
-  bool mainCursor;
+  Vector2 e_res_vec{};
+  Color color{};
+  float radius{};
+  Vector2 position{};
+  bool mainCursor{};
+  int index{};
   std::vector<Vector> vectors;
+  std::vector<CursorResult> cursor_result;
 
-  Cursor_Point() = default;
+  static int global_index;
+
+  Cursor_Point() = delete;
   Cursor_Point(Vector2 position, float radius, Color color, bool mainCursor) : position{position},
                                                                                radius{radius},
                                                                                color{color},
                                                                                mainCursor{mainCursor},
-                                                                               e_res_vec{0, 0} {}
+                                                                               e_res_vec{0, 0} {
+    index = global_index;
+    global_index++;
+  }
+
+  static int &getGlobalIndex() { return global_index; }
 };
 
 #ifndef FEATURES_STRUCT
 #define FEATURES_STRUCT
 struct Features {
-  bool auto_zoom = false;
-  bool showHelpPanel = true;
-  bool showResultPanel = true;
-  bool showVectorGrid = false;
+  bool auto_zoom;
+  bool showHelpPanel;
+  bool showMoreHelpPanel;
+  bool showResultPanel;
+  bool showVectorGrid;
+  Features() = delete;
+  Features(bool auto_zoom, bool showHelpPanel, bool showMoreHelpPanel, bool showResultPanel, bool showVectorGrid)
+      : auto_zoom{auto_zoom},
+        showHelpPanel{showHelpPanel},
+        showMoreHelpPanel{showMoreHelpPanel},
+        showResultPanel{showResultPanel},
+        showVectorGrid{showVectorGrid} {}
 };
 #endif
 
@@ -102,41 +133,23 @@ class ChargeSystem {
   void addCharge(Vector2 position, double charge, Scale scale, float radius, Color color);
   void addCursor(Vector2 position, float radius, Color color, bool mainCursor);
 
-  void removeCharge(int index) {
-    for (auto &charge : m_charge_list) {
-      if (charge.index == index) {
-        m_charge_list.erase(m_charge_list.begin() + index);
-        Charge_particle::getGlobalIndex() -= 1;
-      }
-    }
-  }
+  void removeCharge(int index);
+  void removeCursor(int index);
 
   void setConstants(double e0, Scale scale, double er);
   Constants &getConstants() { return m_constants; }
   void compute_e(Features *features);
-  Vector2 compute_e_grid(Cursor_Point &cursor);
 
   ChargeSystem();
   ~ChargeSystem() = default;
 
-  //TODO dynamic main cursor
-  //In case of multiple cursors set as mainCursor the function will return the first one
-  Cursor_Point &getMainCursor() {
-    if (!m_cursor_list.empty()) {
-      int index = 0;
-      for (const auto &cursor : m_cursor_list) {
-        if (cursor.mainCursor)
-          return m_cursor_list[index];
-        index++;
-      }
-    }
-    //TODO different approach for the error
-    exit(-100);
-  }
+  //In the case that no cursor is set as the main cursor, then return the first one.
+  //In the case of multiple cursors set as the main cursor, the function will return the first one
+  Cursor_Point &getMainCursor();
+  void setMainCursor(int index);
 
   std::vector<Charge_particle> &getChargesList() { return m_charge_list; }
   std::vector<Cursor_Point> &getCursorList() { return m_cursor_list; }
-
  private:
   std::vector<Charge_particle> m_charge_list;
   std::vector<Cursor_Point> m_cursor_list;

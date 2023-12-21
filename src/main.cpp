@@ -7,36 +7,22 @@
 #include "ChargeSystem.h"
 #include "imgui_internal.h"
 
-#include <string>
-
 void Init(float &currentScale) {
   SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
-  InitWindow(1, 1, "Electrostatics simulator");
+  InitWindow(1, 1, "ESFS");
   int monitor_index = GetCurrentMonitor();
   int monitor_width = GetMonitorWidth(monitor_index);
   int monitor_height = GetMonitorHeight(monitor_index);
   SetWindowSize((int) ((float) monitor_width / 1.5f), (int) ((float) monitor_height / 1.5f));
   SetWindowPosition((monitor_width / 2) - GetScreenWidth() / 2, (monitor_height / 2) - GetScreenHeight() / 2);
+  MaximizeWindow();
   SetTargetFPS(60);
   currentScale = rlImGuiSetupS(1.f);
 }
 
-#ifndef FEATURES_STRUCT
-#define FEATURES_STRUCT
-struct Features {
-  bool auto_zoom = false;
-  bool showHelpPanel = true;
-  bool showResultPanel = true;
-};
-#endif
-
 void show_debug_panel(InputSystem &input_system, Features &features, float &cameraScalar) {
-  //ImGuiWindowFlags
-  //  windowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
   auto windowFlags = ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoTitleBar
       | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
-  //ImGui::SetNextWindowBgAlpha(0.8);
-
   ImVec2 center = ImGui::GetMainViewport()->GetCenter();
   center = ImVec2{center.x + center.x / 2, center.y - center.y / 2};
   ImGui::SetNextWindowPos(center, ImGuiCond_Once, ImVec2(0.5f, 0.5f));
@@ -78,11 +64,10 @@ void show_debug_panel(InputSystem &input_system, Features &features, float &came
   ImGui::End();
 }
 
-void log_panel(Cursor_Point &cursor) {
+void show_cursor_result_panel(Cursor_Point &cursor) {
   auto windowFlagsInfo =
       ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoTitleBar
           | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
-  //ImGui::SetNextWindowBgAlpha(0.5);
   ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
   ImGui::Begin("INFO", nullptr, windowFlagsInfo);
   ImGui::Text("Cursor position X: %.2f Y: %.2f", cursor.position.x, cursor.position.y);
@@ -90,7 +75,7 @@ void log_panel(Cursor_Point &cursor) {
   ImGui::End();
 }
 
-void control_panel(ChargeSystem &charge_system, Cursor_Point &cursor) {
+void show_control_panel(ChargeSystem &charge_system, Cursor_Point &cursor) {
   auto windowFlags = ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoTitleBar
       | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
 
@@ -102,7 +87,7 @@ void control_panel(ChargeSystem &charge_system, Cursor_Point &cursor) {
   ImGui::Text("CTRL/STRG + mouse button left on the slider for manual input");
 
   float cursor_pos[2] = {cursor.position.x, cursor.position.y};
-  ImGui::SliderFloat2("Cursor position", cursor_pos, -100.f, 100.f);
+  ImGui::SliderFloat2("Main cursor position", cursor_pos, -100.f, 100.f);
   cursor.position.x = cursor_pos[0];
   cursor.position.y = cursor_pos[1];
 
@@ -125,12 +110,6 @@ void control_panel(ChargeSystem &charge_system, Cursor_Point &cursor) {
     current_item.push_back(temp_scale);
     current_scale.push_back(charge.scale);
   }
-
-  //static const char *current_item[2] = {items[charge_system.getChargesList()[0].scale],
-  //                                    items[charge_system.getChargesList()[1].scale]};
-
-  //static int current_scale[2] = {charge_system.getChargesList()[0].scale,
-  //                             charge_system.getChargesList()[1].scale};
 
   for (auto &charge : charge_system.getChargesList()) {
 
@@ -185,7 +164,7 @@ void control_panel(ChargeSystem &charge_system, Cursor_Point &cursor) {
   ImGui::End();
 }
 
-void help_panel(bool &showHelpPanel) {
+void show_help_panel(Features &features) {
   auto windowFlags = ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoCollapse
       | ImGuiWindowFlags_AlwaysAutoResize;
   ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -195,39 +174,133 @@ void help_panel(bool &showHelpPanel) {
   ImGui::Begin("Help", nullptr, windowFlags);
   ImGui::PopStyleVar();
 
+  ImGui::BeginColumns("Cols", 2, ImGuiOldColumnFlags_GrowParentContentsSize);
+
   ImGui::Text("F1 for results");
   ImGui::Text("F2 for control panel");
   ImGui::Text("F3 for vector grid (Incomplete)");
   ImGui::Text("F10 for debug panel");
-
-  ImGui::Separator();
-
   ImGui::Text("R to toggle the result panel");
   ImGui::Text("H to toggle the help panel");
-  ImGui::Text("SPACE to toggle cursor moving");
+
+  ImGui::NextColumn();
+
+  ImGui::Text("CTRL/STRG + MOUSE_WHEEL for manual zoom");
+  ImGui::Text("Hold MOUSE LEFT BUTTON for dragging charges/cursors");
+
   ImGui::Separator();
-  ImGui::Text("MOUSE_WHEEL for manual zoom");
-  ImGui::Text("MOUSE_LEFT_HOLD for dragging charges");
-  ImGui::Text("MOUSE_RIGHT/C for adding charges");
-  ImGui::Text("SHIFT + MOUSE_LEFT/C for removing the charge");
+  ImGui::Text("Press Q for adding charges");
+  ImGui::Text("SHIFT + Q for removing charges");
+
   ImGui::Separator();
-  ImGui::Text("ESC for exit");
+  ImGui::Text("S to set the main cursor");
+  ImGui::Text("SPACE to toggle main cursor moving");
+  ImGui::Text("Press C for adding cursor");
+  ImGui::Text("SHIFT + C for removing cursor");
+
+  ImGui::Separator();
+  ImGui::Text("ESC for closing the program");
+
+  ImGui::EndColumns();
 
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.f);
-  showHelpPanel = !ImGui::Button("Close");
+  features.showHelpPanel = !ImGui::Button("Close");
+  ImGui::SameLine();
+  features.showMoreHelpPanel = ImGui::Button("More information");
+  if (features.showMoreHelpPanel)
+    features.showHelpPanel = !features.showHelpPanel;
+
+  ImGui::PopStyleVar();
+
+  ImGui::End();
+}
+
+void show_mouse_position_panel(ImFont *font_Drag, InputSystem &input_system, float camera_scalar, Camera2D &camera) {
+  ImVec2 windowPos = ImVec2{GetMousePosition().x, GetMousePosition().y - (camera_scalar * camera.zoom * 1.1f)};
+  ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, ImVec2{0.5f, 1.f});
+  auto windowFlags = ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoCollapse
+      | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBackground
+      | ImGuiWindowFlags_NoDecoration;
+
+  ImGui::PushFont(font_Drag);
+  ImGui::Begin("Cursor_position", nullptr, windowFlags);
+  ImVec4 textColor = {0, 0, 0, 255}; //Black
+  ImGui::TextColored(textColor, "%.2f %.2f", input_system.getRefMousePos().x, input_system.getRefMousePos().y);
+  ImGui::End();
+  ImGui::PopFont();
+}
+
+void show_results_panel(Features &features, ChargeSystem &charge_system) {
+  if (features.showResultPanel) {
+    if (!charge_system.getMainCursor().cursor_result.empty()) {
+      ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+      center = ImVec2{center.x / 2.5f, center.y};
+      ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 20.f);
+      ImGui::Begin("Values", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+      ImGui::PopStyleVar();
+
+      ImGui::Text("Main cursor pos: %.3f %.3f",
+                  charge_system.getMainCursor().position.x,
+                  charge_system.getMainCursor().position.y);
+
+      ImGui::Separator();
+      ImGui::Text("The influence of each charge on the main cursor");
+      int index = 1;
+      for (const auto &charge_result : charge_system.getMainCursor().cursor_result) {
+        ImGui::Text("Particle %d", index);
+        ImGui::Text(TextFormat("r%d: %lf", index, charge_result.r));
+        ImGui::Text(TextFormat("E%d: %lf", index, charge_result.mag_E));
+        ImGui::Text(TextFormat("e%dx: (%lf %lf)", index, charge_result.e_x, charge_result.e_y));
+        ImGui::Text(TextFormat("E%dx: (%lf %lf)", index, charge_result.E_x, charge_result.E_y));
+        ImGui::Text(TextFormat("Abs_mag_E%d: %lf", index, charge_result.abs_mag_E));
+        ImGui::Text(TextFormat("Pos_E_%d: (%lf %lf)", index, charge_result.pos_E_x, charge_result.pos_E_y));
+        ImGui::Text(TextFormat("Val_Res_E_%d: %lf", index, charge_result.res_E_value));
+        ImGui::Separator();
+        index++;
+      }
+
+      ImGui::Separator();
+
+      ImGui::Text("Main cursor");
+      ImGui::Text(TextFormat("Resultant vector: (%f %f)",
+                             charge_system.getMainCursor().e_res_vec.x,
+                             charge_system.getMainCursor().e_res_vec.y));
+      ImGui::Text(TextFormat("Magnitude resultant vector: %f", Vector2Length(charge_system.getMainCursor().e_res_vec)));
+
+      ImGui::End();
+    }
+  }
+}
+
+void show_more_help_panel(Features &features) {
+  auto windowFlags = ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoCollapse
+      | ImGuiWindowFlags_AlwaysAutoResize;
+  ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+  ImGui::SetNextWindowPos(center, 0, ImVec2(0.5f, 0.5f));
+
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 14.f);
+  ImGui::Begin("More information", nullptr, windowFlags);
+  ImGui::PopStyleVar();
+
+  ImGui::Text("Data panels can be moved by holding mouse left button");
+  ImGui::Text("Data panels can be docked by holding shift/strg while holding mouse left button");
+
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.f);
+  features.showMoreHelpPanel = !ImGui::Button("Close");
   ImGui::PopStyleVar();
 
   ImGui::End();
 }
 
 ////////////////////////////////////////////////////ENTRY_POINT///////////////////////////////////////////////
-int main(int argc, char *argv[]) {
+int main() {
   float currentScale = 0.f;
   Init(currentScale);
-  float newScale = currentScale;
+  float newScale;
 
   ImFont *font_Drag = nullptr;
-  std::vector<Color> color_list_order = {Color(RED), Color(BLUE), Color(ORANGE), Color(GRAY), Color(GREEN), Color(MAROON)};
 
   float GLOBAL_SCALE = 10.f;
   InputSystem input_system(GLOBAL_SCALE);
@@ -237,9 +310,9 @@ int main(int argc, char *argv[]) {
 
   charge_system.setConstants(8.854817178, PICO, 1);
 
-  charge_system.addCursor(Vector2{0, 0}, 0.05f, YELLOW, true);
+  charge_system.addCursor(Vector2{0, 0}, 0.05f, BLACK, true);
 
-  Features features = {};
+  Features features = {false, true, false, true, false};
   float camera_scalar = 5.f;
 
   Camera2D camera = {0};
@@ -251,36 +324,8 @@ int main(int argc, char *argv[]) {
   //Main loop
   while (!WindowShouldClose()) {
     RenderSystem::newFrame();
-    //input
-    if (features.auto_zoom) {
-      camera.zoom = ImClamp(((float) GetScreenHeight() / (float) GetScreenWidth()) * camera_scalar, 1.0f, 10.f);
-    } else {
-      if (IsKeyDown(KEY_LEFT_CONTROL))
-        camera.zoom += ((float) GetMouseWheelMove() * 0.125f);
-    }
 
-    if (camera.zoom > 10.0f) camera.zoom = 10.0f;
-    else if (camera.zoom < 0.5f) camera.zoom = 0.5f;
-
-    input_system.update_input(camera.zoom);
-    camera.offset = {(float) GetScreenWidth() / 2.0f, (float) GetScreenHeight() / 2.0f};
-
-    if (input_system.KeysStatus.space)
-      charge_system.getMainCursor().position = input_system.getRefMousePos();
-
-    if (input_system.KeysStatus.R) {
-      features.showResultPanel = !features.showResultPanel;
-      input_system.KeysStatus.R = false;
-    }
-    if (input_system.KeysStatus.H) {
-      features.showHelpPanel = !features.showHelpPanel;
-      input_system.KeysStatus.H = false;
-    }
-
-    //Render ray-lib
-    BeginMode2D(camera);
-    grid_system.render();
-
+    //Font auto scaling
     rlImGuiSetContext();
     newScale = ((float) GetScreenHeight() / (float) GetScreenWidth()) * 4.0f;
     if (newScale != currentScale) {
@@ -298,99 +343,288 @@ int main(int argc, char *argv[]) {
       rlImGuiReloadFonts();
     }
 
+    //ImGui rendering
     rlImGuiBegin();
 
+    //Create docking-space
     ImGui::DockSpaceOverViewport(nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
-    if (!features.showHelpPanel) {
-      render_system.update(input_system.KeysStatus, charge_system, charge_system.getMainCursor(), features);
-      render_system.render(charge_system);
+
+    //Camera
+    //Auto zoom feature
+    camera.offset = {(float) GetScreenWidth() / 2.0f, (float) GetScreenHeight() / 2.0f};
+
+    if (features.auto_zoom) {
+      camera.zoom = ImClamp(((float) GetScreenHeight() / (float) GetScreenWidth()) * camera_scalar, 1.0f, 10.f);
+    } else {
+      if (IsKeyDown(KEY_LEFT_CONTROL))
+        camera.zoom += ((float) GetMouseWheelMove() * 0.125f);
     }
-    EndMode2D();
 
+    //Camera zoom clamping
+    if (camera.zoom > 10.0f) camera.zoom = 10.0f;
+    else if (camera.zoom < 0.5f) camera.zoom = 0.5f;
+
+    //Update the input system
+    input_system.update_input(camera.zoom);
+
+    //Toggling the main cursor dragging
+    if (input_system.KeysStatus.space)
+      charge_system.getMainCursor().position = input_system.getRefMousePos();
+
+    //Toggling value window
+    if (input_system.KeysStatus.R) {
+      features.showResultPanel = !features.showResultPanel;
+      input_system.KeysStatus.R = false;
+    }
+
+    //Toggling help window
+    if (input_system.KeysStatus.H) {
+      features.showHelpPanel = !features.showHelpPanel;
+      input_system.KeysStatus.H = false;
+    }
+
+    //Toggling cursor info window
     if (input_system.KeysStatus.F1)
-      log_panel(charge_system.getMainCursor());
+      show_cursor_result_panel(charge_system.getMainCursor());
 
+    //Toggling control panel window
     if (input_system.KeysStatus.F2)
-      control_panel(charge_system, charge_system.getMainCursor());
+      show_control_panel(charge_system, charge_system.getMainCursor());
 
+    //Toggling the vector grid window
     if (input_system.KeysStatus.F3) {
       features.showVectorGrid = !features.showVectorGrid;
       input_system.KeysStatus.F3 = false;
     }
 
+    //Toggling the debugging window
     if (input_system.KeysStatus.debug)
       show_debug_panel(input_system, features, camera_scalar);
 
+    //Toggling the help window
     if (features.showHelpPanel)
-      help_panel(features.showHelpPanel);
+      show_help_panel(features);
 
-    static int color_index = 0;
-    //Adding charges
-    if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON) || (IsKeyPressed(KEY_C) && !IsKeyDown(KEY_LEFT_SHIFT))) {
-      //Change color for each element
-      if (color_index == color_list_order.size())
-        color_index = 0;
-      charge_system.addCharge(input_system.getRefMousePos(), 10, NANO, 0.1, color_list_order[color_index]);
-      color_index++;
+    //Toggling the more help window
+    if (features.showMoreHelpPanel)
+      show_more_help_panel(features);
+
+    //Toggling the result window
+    if (features.showResultPanel && !features.showHelpPanel && !features.showMoreHelpPanel)
+      show_results_panel(features, charge_system);
+
+    //Render ray-lib
+    BeginMode2D(camera);
+    //Render grid
+    grid_system.render();
+    //Starts the rendering if the help panel is closed
+    if (!features.showHelpPanel) {
+      charge_system.compute_e(&features);
+      render_system.update(input_system.KeysStatus, charge_system, features);
+      render_system.render(charge_system);
     }
+    EndMode2D();
 
-    //Remove charges
-    if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON) || (IsKeyPressed(KEY_C) && IsKeyDown(KEY_LEFT_SHIFT))) {
-      for (const auto &charge : charge_system.getChargesList()) {
-        if (CheckCollisionPointCircle(input_system.getRefMousePos(), charge.position, charge.radius * GLOBAL_SCALE)) {
-          //Color order decreased by one
-          color_index--;
-          if (color_index < 0)
-            color_index = 0;
-          charge_system.removeCharge(charge.index);
+    //Check for inputs when the help panel is closed only
+    if (!features.showHelpPanel && !features.showMoreHelpPanel) {
+      bool Dragging = false;
+      ///////////////////////////////////////////////////Charges/////////////////////////////////////////////
+
+      //Common variables for add/remove charge feature
+      static int charges_color_index = 0;
+      static std::vector<Color>
+          charge_color_list = {Color(RED), Color(BLUE), Color(ORANGE), Color(GRAY), Color(GREEN), Color(MAROON)};
+
+      //If the color index is less than 0, clamp it to 0
+      if (charges_color_index < 0)
+        charges_color_index = 0;
+
+      //Reset the color index when there are no more colors
+      if (charges_color_index == charge_color_list.size())
+        charges_color_index = 0;
+
+      if (input_system.KeysStatus.debug) {
+        ImGui::Begin("DEBUG", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Separator();
+        ImGui::TextColored(ImVec4{0, 255, 255, 255}, "CHARGE SYSTEM");
+      }
+
+      //Implementation for add charges feature
+      if (IsKeyPressed(KEY_Q) && !IsKeyDown(KEY_LEFT_SHIFT)) {
+        charge_system.addCharge(input_system.getRefMousePos(), 10, NANO, 0.1, charge_color_list[charges_color_index]);
+        charges_color_index++;
+      }
+      if (input_system.KeysStatus.debug) {
+
+        ImGui::Text("Color index: %d", charges_color_index);
+        ImGui::Text("Charge system global index: %d", Charge_particle::getGlobalIndex());
+      }
+
+      //Implementation for remove charges feature
+      if (IsKeyPressed(KEY_Q) && IsKeyDown(KEY_LEFT_SHIFT)) {
+        for (const auto &charge : charge_system.getChargesList()) {
+          if (CheckCollisionPointCircle(input_system.getRefMousePos(), charge.position, charge.radius * GLOBAL_SCALE)) {
+            charge_system.removeCharge(charge.index);
+            charges_color_index--;
+            break;
+          }
         }
       }
-    }
+      if (input_system.KeysStatus.debug) {
 
-    //Drag charges
-    //TODO One of the messiest code ever, but it works perfectly (almost)
-    float shift_scale = 2;
-    static size_t last_pressed_element = -1;
-    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-      for (auto &charge : charge_system.getChargesList()) {
-        if (CheckCollisionPointCircle(input_system.getRefMousePos(), charge.position, charge.radius * GLOBAL_SCALE)
-            || (last_pressed_element != -1 && &charge == &charge_system.getChargesList()[last_pressed_element])) {
-          charge.position = input_system.getRefMousePos();
-          ImVec2 windowPos = ImVec2{GetMousePosition().x, GetMousePosition().y - (camera_scalar * camera.zoom * 1.1f)};
-          ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, ImVec2{0.5f, 1.f});
-          auto windowFlags =
-              ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoCollapse
-                  | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBackground
-                  | ImGuiWindowFlags_NoDecoration;
+        ImGui::Text("Charges indexes");
+        for (const auto &charge : charge_system.getChargesList()) {
+          ImGui::Text("%d ", charge.index);
+          ImGui::SameLine();
+        }
 
-          ImGui::PushFont(font_Drag);
-          ImGui::Begin("Cursor_position", nullptr, windowFlags);
-          ImGui::TextColored(ImVec4{0, 0, 0, 255},
-                             "%.2f %.2f",
-                             input_system.getRefMousePos().x,
-                             input_system.getRefMousePos().y);
-          ImGui::End();
-          ImGui::PopFont();
+        ImGui::End();
+      }
 
-          //TODO high performance hit, but takes time to refactor this function
-          //Find the pressed element
-          for (size_t index = 0; index < charge_system.getChargesList().size(); index++) {
-            if (&charge == &charge_system.getChargesList()[index]) {
-              last_pressed_element = index;
+      ///////////////////////////////////////Charge dragging/////////////////////////////////////////
+
+      //Implementation for charges dragging feature
+      //Last_pressed_element solves the problem of fast moving cursor.
+      //By "short-circuiting" the collision check.
+      //If the mouse click is still pressed, then ignore if it is over the charge
+      static size_t charge_last_pressed_element = -1;
+
+      if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+        if (!Dragging) {
+          if (charge_last_pressed_element != -1) {
+            charge_system.getChargesList()[charge_last_pressed_element].position = input_system.getRefMousePos();
+            show_mouse_position_panel(font_Drag, input_system, camera_scalar, camera);
+          } else {
+            for (auto &charge : charge_system.getChargesList()) {
+              if (CheckCollisionPointCircle(input_system.getRefMousePos(),
+                                            charge.position,
+                                            charge.radius * GLOBAL_SCALE)) {
+                Dragging = true;
+                charge.position = input_system.getRefMousePos();
+                show_mouse_position_panel(font_Drag, input_system, camera_scalar, camera);
+
+                //Find the pressed element index in the vector
+                for (size_t index = 0; index < charge_system.getChargesList().size(); index++)
+                  if (&charge == &charge_system.getChargesList()[index])
+                    charge_last_pressed_element = index;
+
+                break;
+              }
             }
           }
-          if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT))
-            last_pressed_element = -1;
-          //It is used as a height layer, so the entities don't get stuck one in the other
-          break;
+        }
+      } else {
+        charge_last_pressed_element = -1;
+        Dragging = false;
+      }
+
+      //////////////////////////////////////////Cursor///////////////////////////////////////////
+
+      static int cursor_color_index = 0;
+
+      static std::vector<Color>
+          cursor_color_list = {Color(RED), Color(BLUE), Color(ORANGE), Color(GRAY), Color(GREEN), Color(MAROON)};
+
+      //If the color index is less than 0, clamp it to 0
+      if (cursor_color_index < 0)
+        cursor_color_index = 0;
+
+      //Reset the color index when there are no more colors
+      if (cursor_color_index == cursor_color_list.size())
+        cursor_color_index = 0;
+
+      if (input_system.KeysStatus.debug) {
+        ImGui::Begin("DEBUG", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Separator();
+        ImGui::TextColored(ImVec4{255, 255, 0, 255}, "CURSOR SYSTEM");
+      }
+
+      //Implementation for add cursor feature
+      if (IsKeyPressed(KEY_C) && !IsKeyDown(KEY_LEFT_SHIFT)) {
+        charge_system.addCursor(input_system.getRefMousePos(), 0.05f, cursor_color_list[cursor_color_index], false);
+        cursor_color_index++;
+      }
+      if (input_system.KeysStatus.debug) {
+
+        ImGui::Text("Color index: %d", cursor_color_index);
+        ImGui::Text("Cursor system global index: %d", Cursor_Point::getGlobalIndex());
+      }
+
+      //Implementation for remove cursor feature
+      if (IsKeyPressed(KEY_C) && IsKeyDown(KEY_LEFT_SHIFT)) {
+        for (const auto &cursor : charge_system.getCursorList()) {
+          if (CheckCollisionPointCircle(input_system.getRefMousePos(), cursor.position, cursor.radius * GLOBAL_SCALE)) {
+            charge_system.removeCursor(cursor.index);
+            cursor_color_index--;
+            break;
+          }
         }
       }
-    } else {
-      last_pressed_element = -1;
+      if (input_system.KeysStatus.debug) {
+        ImGui::Text("Cursor indexes");
+        for (const auto &cursor : charge_system.getCursorList()) {
+          ImGui::Text("%d ", cursor.index);
+          ImGui::SameLine();
+        }
+        ImGui::End();
+      }
+
+      //TODO fix dragging cursor and charge when they are overlapped
+
+      //////////////////////////////////Cursor dragging/////////////////////////////////////////
+
+      //Implementation for charges dragging feature
+      //Last_pressed_element solves the problem of fast moving cursor.
+      //By "short-circuiting" the collision check.
+      //If the mouse click is still pressed, then ignore if it is over the charge
+      static size_t cursor_last_pressed_element = -1;
+
+      if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+        if (!Dragging) {
+          if (cursor_last_pressed_element != -1) {
+            charge_system.getCursorList()[cursor_last_pressed_element].position = input_system.getRefMousePos();
+            show_mouse_position_panel(font_Drag, input_system, camera_scalar, camera);
+          } else {
+            for (auto &cursor : charge_system.getCursorList()) {
+              if (CheckCollisionPointCircle(input_system.getRefMousePos(),
+                                            cursor.position,
+                                            cursor.radius * GLOBAL_SCALE)) {
+                Dragging = true;
+                cursor.position = input_system.getRefMousePos();
+                show_mouse_position_panel(font_Drag, input_system, camera_scalar, camera);
+
+                //Find the pressed element index in the vector
+                for (size_t index = 0; index < charge_system.getCursorList().size(); index++)
+                  if (&cursor == &charge_system.getCursorList()[index])
+                    cursor_last_pressed_element = index;
+
+                break;
+              }
+            }
+          }
+        }
+      } else {
+        cursor_last_pressed_element = -1;
+        Dragging = false;
+      }
+
+      ////////////////////////////////////Set main cursor/////////////////////
+      int indexCursor = -1;
+      if (IsKeyPressed(KEY_S)) {
+        for (auto &cursor : charge_system.getCursorList()) {
+          if (CheckCollisionPointCircle(input_system.getRefMousePos(),
+                                        cursor.position,
+                                        cursor.radius * GLOBAL_SCALE)) {
+            indexCursor = cursor.index;
+          }
+        }
+        if (indexCursor != -1) {
+          charge_system.setMainCursor(indexCursor);
+        }
+      }
     }
 
     rlImGuiEnd();
-
     RenderSystem::endFrame();
   }
 

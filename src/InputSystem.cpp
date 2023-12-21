@@ -1,9 +1,6 @@
 #include "InputSystem.h"
 
-#include "imgui.h"
-#include <stdio.h>
 void InputSystem::update_input(float cameraZoom) {
-  //TODO Enforce that only one mode is active at a time.
   if (IsKeyPressed(KEY_F1)) KeysStatus.F1 = !KeysStatus.F1;
   if (IsKeyPressed(KEY_F2)) KeysStatus.F2 = !KeysStatus.F2;
   if (IsKeyPressed(KEY_F3)) KeysStatus.F3 = !KeysStatus.F3;
@@ -21,8 +18,7 @@ void InputSystem::update_input(float cameraZoom) {
   Vector2 refined_position = {0, 0};
 
   //Offsetting the mouse position to center
-  Vector2 origin_offset = {(raw_position.x - (float) windowWidth / 2),
-                           (-raw_position.y + (float) windowHeight / 2)};
+  Vector2 origin_offset = {(raw_position.x - (float) windowWidth / 2), (-raw_position.y + (float) windowHeight / 2)};
 
   refined_position.x = origin_offset.x / (m_scale_factor * cameraZoom);
   refined_position.y = origin_offset.y / (m_scale_factor * cameraZoom);
@@ -30,5 +26,5 @@ void InputSystem::update_input(float cameraZoom) {
   m_ref_mouse_pos = refined_position;
 }
 
-InputSystem::InputSystem(float scaleFactor) : m_scale_factor{scaleFactor}, m_ref_mouse_pos{0,0} {}
+InputSystem::InputSystem(float scaleFactor) : m_scale_factor{scaleFactor}, m_ref_mouse_pos{0, 0} {}
 Vector2 InputSystem::getRefMousePos() const { return m_ref_mouse_pos; }

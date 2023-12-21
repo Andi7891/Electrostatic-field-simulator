@@ -55,10 +55,6 @@ add_executable(ESFS "${CONSOLE}"
         src/GridSystem.cpp
         src/GridSystem.h)
 
-
-#set(CMAKE_CXX_FLAGS "-static-libgcc -static-libstdc++")
-target_link_libraries(ESFS -static -lraylib -lopengl32 -lgdi32 -lwinmm)
-
 target_include_directories(ESFS PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vendors/raylib/include")
 target_link_directories(ESFS PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vendors/raylib/lib")
-target_link_libraries(ESFS raylib)
+target_link_libraries(ESFS -static -lraylib -lopengl32 -lgdi32 -lwinmm)

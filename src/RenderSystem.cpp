@@ -1,6 +1,7 @@
 #include "RenderSystem.h"
 
-RenderSystem::RenderSystem(float scaleFactor, float radius_scale) : m_scale_factor(scaleFactor), m_radius_scale(radius_scale) {
+RenderSystem::RenderSystem(float scaleFactor, float radius_scale)
+    : m_scale_factor(scaleFactor), m_radius_scale(radius_scale) {
 
 }
 
@@ -56,7 +57,7 @@ void RenderSystem::render(ChargeSystem &charge_system) const {
     DrawLineEx(vec.tail, temp_vec_head, 2.0f, vec.color);
     DrawTriangleAtEndOfLine(vec.tail, vec.head, 10.f, vec.color);
   }
-  
+
   //Cursor drawing
   float contourSize = 1.5f;
   for (const auto &cursor : charge_system.getCursorList()) {
@@ -67,36 +68,30 @@ void RenderSystem::render(ChargeSystem &charge_system) const {
   }
 }
 
-void RenderSystem::update(KeysStatus &keys_status,
-                          ChargeSystem &charge_system,
-                          Cursor_Point &cursor,
-                          Features &features) {
-
-  charge_system.compute_e(&features);
-
-  Vector2 refined_cursor_position = {cursor.position.x * m_scale_factor, -cursor.position.y * m_scale_factor};
-
+void RenderSystem::update(KeysStatus &keys_status, ChargeSystem &charge_system, Features &features) {
   m_vector_render_list.clear();
 
-  for (const auto &vec : cursor.vectors) {
-    Vector temp_vector = {refined_cursor_position, Vector2Add(Vector2Zero(),
-                                                              Vector2{vec.head.x* m_scale_factor,
-                                                                      vec.head.y * -m_scale_factor}), vec.color};
-    m_vector_render_list.push_back(temp_vector);
+  for (const auto &cursor : charge_system.getCursorList()) {
+    Vector2 refined_cursor_position = {cursor.position.x * m_scale_factor, -cursor.position.y * m_scale_factor};
+    for (const auto &vec : cursor.vectors) {
+      Vector temp_render_vector = {refined_cursor_position, Vector2Add(Vector2Zero(),
+                                                                Vector2{vec.head.x * m_scale_factor,
+                                                                        vec.head.y * -m_scale_factor}), vec.color};
+      m_vector_render_list.push_back(temp_render_vector);
+    }
+    Vector vec_res = {refined_cursor_position, Vector2Add(refined_cursor_position,
+                                                          Vector2{cursor.e_res_vec.x * m_scale_factor,
+                                                                  cursor.e_res_vec.y * -m_scale_factor}), PINK};
+    m_vector_render_list.push_back(vec_res);
   }
-
-  Vector vec_res = {refined_cursor_position, Vector2Add(refined_cursor_position,
-                                                        Vector2{cursor.e_res_vec.x * m_scale_factor,
-                                                                cursor.e_res_vec.y * -m_scale_factor}), PINK};
-
-  m_vector_render_list.push_back(vec_res);
-
   //Grid vector
+  /*
   if (features.showVectorGrid) {
     static Cursor_Point tempCursor = {Vector2{-10 * m_scale_factor, -10 * m_scale_factor}, 0, Color{0, 0, 0}, false};
     for (int index_x = 0; index_x < 8; index_x++) {
       for (int index_y = 0; index_y < 8; index_y++) {
-        charge_system.compute_e_grid(tempCursor);
+        //TODO vector grid reimplementation
+        //charge_system.compute_e(tempCursor);
         Vector tempVec = {tempCursor.position, Vector2Add(tempCursor.position,
                                                           Vector2{tempCursor.e_res_vec.x * m_scale_factor,
                                                                   tempCursor.e_res_vec.y * -m_scale_factor}), RED};
@@ -110,4 +105,5 @@ void RenderSystem::update(KeysStatus &keys_status,
     }
     tempCursor.position = {-10 * m_scale_factor, -10 * m_scale_factor};
   }
+  */
 }
