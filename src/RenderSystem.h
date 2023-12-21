@@ -38,7 +38,7 @@ struct Features {
 class RenderSystem {
  public:
 
-  void update(KeysStatus &keys_status, ChargeSystem &charge_system, Features& features);
+  void update(ChargeSystem &charge_system, Features& features);
   void render(ChargeSystem& charge_system) const;
 
   static void newFrame();

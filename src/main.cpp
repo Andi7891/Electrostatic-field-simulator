@@ -30,11 +30,12 @@ void show_debug_panel(InputSystem &input_system, Features &features, float &came
   ImGui::Begin("DEBUG", nullptr, windowFlags);
   ImGui::TextColored(ImVec4(0, 255, 0, 255), "WINDOW SPECIFICATIONS");
   ImGui::Text("Absolut window size %d | %d", GetScreenWidth(), GetScreenHeight());
-  ImGui::Text("FPS: %d", GetFPS());
+  ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
+              1000.0f / ImGui::GetIO().Framerate,
+              ImGui::GetIO().Framerate);
   ImGui::Text("Current window DPI: %.3f %.3f", GetWindowScaleDPI().x, GetWindowScaleDPI().y);
 
   ImGui::Separator();
-
   ImGui::TextColored(ImVec4(255, 0, 0, 255), "INPUT SPECIFICATIONS");
   ImGui::Checkbox("F1", &input_system.KeysStatus.F1);
   ImGui::SameLine();
@@ -54,7 +55,7 @@ void show_debug_panel(InputSystem &input_system, Features &features, float &came
 
   //3rd Row
   ImGui::Text("Auto zoom scalar");
-  ImGui::SliderFloat(".", &cameraScalar, 1.0f, 10.f);
+  ImGui::SliderFloat("##Auto zoom scalar slider", &cameraScalar, 1.0f, 10.f);
 
   //4th row
   ImGui::Separator();
@@ -76,18 +77,18 @@ void show_cursor_result_panel(Cursor_Point &cursor) {
 }
 
 void show_control_panel(ChargeSystem &charge_system, Cursor_Point &cursor) {
-  auto windowFlags = ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoTitleBar
-      | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
+  auto windowFlags = ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoCollapse
+      | ImGuiWindowFlags_AlwaysAutoResize;
 
   ImVec2 center = ImGui::GetMainViewport()->GetCenter();
   center = ImVec2{center.x + center.x / 2, center.y + center.y / 2};
   ImGui::SetNextWindowPos(center, ImGuiCond_Once, ImVec2(0.5f, 0.5f));
 
   ImGui::Begin("Control Panel", nullptr, windowFlags);
-  ImGui::Text("CTRL/STRG + mouse button left on the slider for manual input");
 
   float cursor_pos[2] = {cursor.position.x, cursor.position.y};
-  ImGui::SliderFloat2("Main cursor position", cursor_pos, -100.f, 100.f);
+  ImGui::Text("Main cursor position");
+  ImGui::SliderFloat2("##Main cursor pos", cursor_pos, -100.f, 100.f);
   cursor.position.x = cursor_pos[0];
   cursor.position.y = cursor_pos[1];
 
@@ -112,15 +113,18 @@ void show_control_panel(ChargeSystem &charge_system, Cursor_Point &cursor) {
   }
 
   for (auto &charge : charge_system.getChargesList()) {
+    auto particle_color = ImColor(charge.color.r, charge.color.g, charge.color.b);
+    ImGui::TextColored(particle_color, "PARTICLE NO %d", index);
 
     //Position
     float temp_val[2] = {charge.position.x, charge.position.y};
-    ImGui::SliderFloat2(TextFormat("Particle no %d position", index), temp_val, -100.f, 100.f);
+    ImGui::Text("Particle position");
+    ImGui::SliderFloat2(TextFormat("##Pos %d", index), temp_val, -100.f, 100.f);
     charge.position.x = temp_val[0];
     charge.position.y = temp_val[1];
 
     //Scale
-    if (ImGui::BeginCombo(TextFormat("Charge %d scale unit", index),
+    if (ImGui::BeginCombo(TextFormat("Charge S.U. %d", index),
                           current_item[index - 1],
                           ImGuiComboFlags_WidthFitPreview)) {
       for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
@@ -138,19 +142,18 @@ void show_control_panel(ChargeSystem &charge_system, Cursor_Point &cursor) {
     //Charge
     charge.scale = Scale(current_scale[index - 1]);
 
-    ImGui::SliderFloat(TextFormat("Particle no %d charge (%s)", index, current_item[index - 1]),
-                       &charge.charge_unscaled,
-                       -100.f,
-                       100.f);
+    ImGui::Text("Particle charge");
+    ImGui::SliderFloat(TextFormat("##Charge %d", index), &charge.charge_unscaled, -100.f, 100.f);
 
     //Radius
-    ImGui::SliderFloat(TextFormat("Particle no %d radius (m)", index), &charge.radius, 0.f, 100.f);
+    ImGui::Text("Particle radius(m)");
+    ImGui::SliderFloat(TextFormat("##Radius %d", index), &charge.radius, 0.f, 100.f);
 
     auto color = ImColor(charge.color.r, charge.color.g, charge.color.b);
     float temp_color[3] = {color.Value.x, color.Value.y, color.Value.z};
 
-    ImGui::Text("Press on the colour preview for the colour selector");
-    ImGui::ColorEdit3(TextFormat("Particle no %d color", index), temp_color);
+    ImGui::Text("Particle color");
+    ImGui::ColorEdit3(TextFormat("##Color %d", index), temp_color);
 
     charge.color = Color{
         (unsigned char) (temp_color[0] >= 1.0 ? 255 : (temp_color[0] <= 0.0 ? 0 : (int) floor(temp_color[0] * 256.0))),
@@ -176,11 +179,11 @@ void show_help_panel(Features &features) {
 
   ImGui::BeginColumns("Cols", 2, ImGuiOldColumnFlags_GrowParentContentsSize);
 
-  ImGui::Text("F1 for results");
+  ImGui::Text("F1 for the main cursor short results panel");
   ImGui::Text("F2 for control panel");
   ImGui::Text("F3 for vector grid (Incomplete)");
   ImGui::Text("F10 for debug panel");
-  ImGui::Text("R to toggle the result panel");
+  ImGui::Text("R to toggle the influences on the main cursor panel");
   ImGui::Text("H to toggle the help panel");
 
   ImGui::NextColumn();
@@ -232,44 +235,47 @@ void show_mouse_position_panel(ImFont *font_Drag, InputSystem &input_system, flo
 
 void show_results_panel(Features &features, ChargeSystem &charge_system) {
   if (features.showResultPanel) {
-    if (!charge_system.getMainCursor().cursor_result.empty()) {
-      ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-      center = ImVec2{center.x / 2.5f, center.y};
-      ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    if (charge_system.isChargeSystemValid()) {
+      if (!charge_system.getMainCursor().cursor_result.empty()) {
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        center = ImVec2{center.x / 2.5f, center.y};
+        ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 20.f);
-      ImGui::Begin("Values", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-      ImGui::PopStyleVar();
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 20.f);
+        ImGui::Begin("Influences on the main cursor", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::PopStyleVar();
 
-      ImGui::Text("Main cursor pos: %.3f %.3f",
-                  charge_system.getMainCursor().position.x,
-                  charge_system.getMainCursor().position.y);
+        ImGui::Text("Main cursor pos: %.3f %.3f",
+                    charge_system.getMainCursor().position.x,
+                    charge_system.getMainCursor().position.y);
 
-      ImGui::Separator();
-      ImGui::Text("The influence of each charge on the main cursor");
-      int index = 1;
-      for (const auto &charge_result : charge_system.getMainCursor().cursor_result) {
-        ImGui::Text("Particle %d", index);
-        ImGui::Text(TextFormat("r%d: %lf", index, charge_result.r));
-        ImGui::Text(TextFormat("E%d: %lf", index, charge_result.mag_E));
-        ImGui::Text(TextFormat("e%dx: (%lf %lf)", index, charge_result.e_x, charge_result.e_y));
-        ImGui::Text(TextFormat("E%dx: (%lf %lf)", index, charge_result.E_x, charge_result.E_y));
-        ImGui::Text(TextFormat("Abs_mag_E%d: %lf", index, charge_result.abs_mag_E));
-        ImGui::Text(TextFormat("Pos_E_%d: (%lf %lf)", index, charge_result.pos_E_x, charge_result.pos_E_y));
-        ImGui::Text(TextFormat("Val_Res_E_%d: %lf", index, charge_result.res_E_value));
         ImGui::Separator();
-        index++;
+        ImGui::Text("Charge influences on the main cursor");
+        int index = 1;
+        for (const auto &charge_result : charge_system.getMainCursor().cursor_result) {
+          ImGui::Text("Particle %d", index);
+          ImGui::Text(TextFormat("r%d: %lf", index, charge_result.r));
+          ImGui::Text(TextFormat("E%d: %lf", index, charge_result.mag_E));
+          ImGui::Text(TextFormat("e%dx: (%lf %lf)", index, charge_result.e_x, charge_result.e_y));
+          ImGui::Text(TextFormat("E%dx: (%lf %lf)", index, charge_result.E_x, charge_result.E_y));
+          ImGui::Text(TextFormat("Abs_mag_E%d: %lf", index, charge_result.abs_mag_E));
+          ImGui::Text(TextFormat("Pos_E_%d: (%lf %lf)", index, charge_result.pos_E_x, charge_result.pos_E_y));
+          ImGui::Text(TextFormat("Val_Res_E_%d: %lf", index, charge_result.res_E_value));
+          ImGui::Separator();
+          index++;
+        }
+
+        ImGui::Separator();
+
+        ImGui::Text("Main cursor");
+        ImGui::Text(TextFormat("Resultant vector: (%f %f)",
+                               charge_system.getMainCursor().e_res_vec.x,
+                               charge_system.getMainCursor().e_res_vec.y));
+        ImGui::Text(TextFormat("Magnitude resultant vector: %f",
+                               Vector2Length(charge_system.getMainCursor().e_res_vec)));
+
+        ImGui::End();
       }
-
-      ImGui::Separator();
-
-      ImGui::Text("Main cursor");
-      ImGui::Text(TextFormat("Resultant vector: (%f %f)",
-                             charge_system.getMainCursor().e_res_vec.x,
-                             charge_system.getMainCursor().e_res_vec.y));
-      ImGui::Text(TextFormat("Magnitude resultant vector: %f", Vector2Length(charge_system.getMainCursor().e_res_vec)));
-
-      ImGui::End();
     }
   }
 }
@@ -284,8 +290,12 @@ void show_more_help_panel(Features &features) {
   ImGui::Begin("More information", nullptr, windowFlags);
   ImGui::PopStyleVar();
 
-  ImGui::Text("Data panels can be moved by holding mouse left button");
-  ImGui::Text("Data panels can be docked by holding shift/strg while holding mouse left button");
+  ImGui::BulletText("Data panels can be moved by holding mouse left button");
+  ImGui::BulletText("Data panels can be docked by holding shift/strg while holding mouse left button");
+  ImGui::BulletText("CTRL/STRG + mouse left button on any slider in the control panel for precise input");
+  ImGui::BulletText("The colour of charges can be changed by clicking on the colour preview");
+  ImGui::BulletText(
+      "The simulator needs a main cursor, otherwise the simulation is disabled and all related windows are closed, until a cursor is present");
 
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.f);
   features.showMoreHelpPanel = !ImGui::Button("Close");
@@ -310,8 +320,6 @@ int main() {
 
   charge_system.setConstants(8.854817178, PICO, 1);
 
-  charge_system.addCursor(Vector2{0, 0}, 0.05f, BLACK, true);
-
   Features features = {false, true, false, true, false};
   float camera_scalar = 5.f;
 
@@ -320,6 +328,9 @@ int main() {
   camera.target = {0.0f, 0.0f};
   camera.rotation = 0.0f;
   camera.zoom = ImClamp(((float) GetScreenHeight() / (float) GetScreenWidth()) * camera_scalar, 1.0f, 10.f);
+
+  //ImGui terminology
+  //https://github.com/ocornut/imgui/wiki/Glossary
 
   //Main loop
   while (!WindowShouldClose()) {
@@ -346,8 +357,24 @@ int main() {
     //ImGui rendering
     rlImGuiBegin();
 
-    //Create docking-space
-    ImGui::DockSpaceOverViewport(nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
+    const ImGuiViewport *viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+    ImGui::SetNextWindowViewport(viewport->ID);
+
+    ImGuiWindowFlags windowFlags =
+        ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoDocking
+            | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
+            | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground;
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+    ImGui::Begin("Main", nullptr, windowFlags);
+    ImGui::PopStyleVar(3);
+    ImGui::DockSpace(ImGui::GetID("Dockspace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+    ImGui::End();
 
     //Camera
     //Auto zoom feature
@@ -368,8 +395,11 @@ int main() {
     input_system.update_input(camera.zoom);
 
     //Toggling the main cursor dragging
-    if (input_system.KeysStatus.space)
-      charge_system.getMainCursor().position = input_system.getRefMousePos();
+    if (!ImGui::GetIO().WantCaptureMouse) {
+      if (input_system.KeysStatus.space)
+        if (charge_system.isChargeSystemValid())
+          charge_system.getMainCursor().position = input_system.getRefMousePos();
+    }
 
     //Toggling value window
     if (input_system.KeysStatus.R) {
@@ -385,11 +415,13 @@ int main() {
 
     //Toggling cursor info window
     if (input_system.KeysStatus.F1)
-      show_cursor_result_panel(charge_system.getMainCursor());
+      if (charge_system.isChargeSystemValid())
+        show_cursor_result_panel(charge_system.getMainCursor());
 
     //Toggling control panel window
     if (input_system.KeysStatus.F2)
-      show_control_panel(charge_system, charge_system.getMainCursor());
+      if (charge_system.isChargeSystemValid())
+        show_control_panel(charge_system, charge_system.getMainCursor());
 
     //Toggling the vector grid window
     if (input_system.KeysStatus.F3) {
@@ -402,8 +434,11 @@ int main() {
       show_debug_panel(input_system, features, camera_scalar);
 
     //Toggling the help window
-    if (features.showHelpPanel)
+    if (features.showHelpPanel) {
       show_help_panel(features);
+      if (input_system.KeysStatus.F2)
+        input_system.KeysStatus.F2 = !input_system.KeysStatus.F2;
+    }
 
     //Toggling the more help window
     if (features.showMoreHelpPanel)
@@ -417,17 +452,31 @@ int main() {
     BeginMode2D(camera);
     //Render grid
     grid_system.render();
+
+    //Disable the cursor if it is inside a charge
+    for (auto &cursor : charge_system.getCursorList()) {
+      for (auto &charge : charge_system.getChargesList())
+        if (CheckCollisionCircles(cursor.position,
+                                  (cursor.radius + 0.25f * cursor.radius) * GLOBAL_SCALE,
+                                  charge.position,
+                                  charge.radius * GLOBAL_SCALE)) {
+          cursor.active = false;
+        } else {
+          cursor.active = true;
+        }
+    }
+
     //Starts the rendering if the help panel is closed
     if (!features.showHelpPanel) {
       charge_system.compute_e(&features);
-      render_system.update(input_system.KeysStatus, charge_system, features);
+      render_system.update(charge_system, features);
       render_system.render(charge_system);
     }
     EndMode2D();
 
     //Check for inputs when the help panel is closed only
     if (!features.showHelpPanel && !features.showMoreHelpPanel) {
-      bool Dragging = false;
+
       ///////////////////////////////////////////////////Charges/////////////////////////////////////////////
 
       //Common variables for add/remove charge feature
@@ -447,37 +496,46 @@ int main() {
         ImGui::Begin("DEBUG", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::Separator();
         ImGui::TextColored(ImVec4{0, 255, 255, 255}, "CHARGE SYSTEM");
+        ImGui::End();
       }
 
       //Implementation for add charges feature
-      if (IsKeyPressed(KEY_Q) && !IsKeyDown(KEY_LEFT_SHIFT)) {
-        charge_system.addCharge(input_system.getRefMousePos(), 10, NANO, 0.1, charge_color_list[charges_color_index]);
-        charges_color_index++;
-      }
-      if (input_system.KeysStatus.debug) {
+      if (!ImGui::GetIO().WantCaptureMouse)
+        if (IsKeyPressed(KEY_Q) && !IsKeyDown(KEY_LEFT_SHIFT)) {
+          charge_system.addCharge(input_system.getRefMousePos(), 10, NANO, 0.1, charge_color_list[charges_color_index]);
+          charges_color_index++;
+        }
 
+      if (input_system.KeysStatus.debug) {
+        ImGui::Begin("DEBUG", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::Text("Color index: %d", charges_color_index);
         ImGui::Text("Charge system global index: %d", Charge_particle::getGlobalIndex());
+        ImGui::End();
       }
 
       //Implementation for remove charges feature
-      if (IsKeyPressed(KEY_Q) && IsKeyDown(KEY_LEFT_SHIFT)) {
-        for (const auto &charge : charge_system.getChargesList()) {
-          if (CheckCollisionPointCircle(input_system.getRefMousePos(), charge.position, charge.radius * GLOBAL_SCALE)) {
-            charge_system.removeCharge(charge.index);
-            charges_color_index--;
-            break;
+      if (!ImGui::GetIO().WantCaptureMouse)
+        if (IsKeyPressed(KEY_Q) && IsKeyDown(KEY_LEFT_SHIFT)) {
+          for (const auto &charge : charge_system.getChargesList()) {
+            if (CheckCollisionPointCircle(input_system.getRefMousePos(),
+                                          charge.position,
+                                          charge.radius * GLOBAL_SCALE)) {
+              charge_system.removeCharge(charge.index);
+              charges_color_index--;
+              break;
+            }
           }
         }
-      }
       if (input_system.KeysStatus.debug) {
-
+        ImGui::Begin("DEBUG", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::Text("Charges indexes");
         for (const auto &charge : charge_system.getChargesList()) {
+          if (!(charge.index % 12)) {
+            ImGui::NewLine();
+          }
           ImGui::Text("%d ", charge.index);
           ImGui::SameLine();
         }
-
         ImGui::End();
       }
 
@@ -488,35 +546,42 @@ int main() {
       //By "short-circuiting" the collision check.
       //If the mouse click is still pressed, then ignore if it is over the charge
       static size_t charge_last_pressed_element = -1;
+      static bool charge_dragged = false;
+      static bool cursor_dragged = false;
 
-      if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-        if (!Dragging) {
-          if (charge_last_pressed_element != -1) {
-            charge_system.getChargesList()[charge_last_pressed_element].position = input_system.getRefMousePos();
-            show_mouse_position_panel(font_Drag, input_system, camera_scalar, camera);
-          } else {
-            for (auto &charge : charge_system.getChargesList()) {
-              if (CheckCollisionPointCircle(input_system.getRefMousePos(),
-                                            charge.position,
-                                            charge.radius * GLOBAL_SCALE)) {
-                Dragging = true;
-                charge.position = input_system.getRefMousePos();
-                show_mouse_position_panel(font_Drag, input_system, camera_scalar, camera);
+        if (!cursor_dragged) {
+          if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+            if (charge_last_pressed_element != -1) {
+              charge_system.getChargesList()[charge_last_pressed_element].position = input_system.getRefMousePos();
+              show_mouse_position_panel(font_Drag, input_system, camera_scalar, camera);
+            } else {
+              for (auto &charge : charge_system.getChargesList()) {
+                if (CheckCollisionPointCircle(input_system.getRefMousePos(),
+                                              charge.position,
+                                              charge.radius * GLOBAL_SCALE)) {
+                  charge_dragged = true;
 
-                //Find the pressed element index in the vector
-                for (size_t index = 0; index < charge_system.getChargesList().size(); index++)
-                  if (&charge == &charge_system.getChargesList()[index])
-                    charge_last_pressed_element = index;
+                  if (!ImGui::GetIO().WantCaptureMouse)
+                    charge.position = input_system.getRefMousePos();
 
-                break;
+                  show_mouse_position_panel(font_Drag, input_system, camera_scalar, camera);
+
+                  //Find the pressed element index in the vector
+                  for (size_t index = 0; index < charge_system.getChargesList().size(); index++)
+                    if (&charge == &charge_system.getChargesList()[index])
+                      charge_last_pressed_element = index;
+
+                  break;
+                }
               }
             }
+
+          } else {
+            charge_last_pressed_element = -1;
+            charge_dragged = false;
           }
         }
-      } else {
-        charge_last_pressed_element = -1;
-        Dragging = false;
-      }
+
 
       //////////////////////////////////////////Cursor///////////////////////////////////////////
 
@@ -525,103 +590,137 @@ int main() {
       static std::vector<Color>
           cursor_color_list = {Color(RED), Color(BLUE), Color(ORANGE), Color(GRAY), Color(GREEN), Color(MAROON)};
 
-      //If the color index is less than 0, clamp it to 0
-      if (cursor_color_index < 0)
-        cursor_color_index = 0;
+      if (!features.showVectorGrid) {
+        //If the color index is less than 0, clamp it to 0
+        if (cursor_color_index < 0)
+          cursor_color_index = 0;
 
-      //Reset the color index when there are no more colors
-      if (cursor_color_index == cursor_color_list.size())
-        cursor_color_index = 0;
+        //Reset the color index when there are no more colors
+        if (cursor_color_index == cursor_color_list.size())
+          cursor_color_index = 0;
+      }
+      if (input_system.KeysStatus.debug) {
+        ImGui::Begin("DEBUG", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::NewLine();
+        ImGui::Separator();
+        ImGui::TextColored(ImVec4{255, 255, 0, 255}, "CURSOR SYSTEM");
+        ImGui::End();
+      }
+
+      if (!features.showVectorGrid) {
+        //Implementation for add cursor feature
+        if (!ImGui::GetIO().WantCaptureMouse)
+          if (IsKeyPressed(KEY_C) && !IsKeyDown(KEY_LEFT_SHIFT)) {
+            charge_system.addCursor(input_system.getRefMousePos(), 0.05f, cursor_color_list[cursor_color_index], false);
+            cursor_color_index++;
+          }
+      }
 
       if (input_system.KeysStatus.debug) {
         ImGui::Begin("DEBUG", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-        ImGui::Separator();
-        ImGui::TextColored(ImVec4{255, 255, 0, 255}, "CURSOR SYSTEM");
-      }
-
-      //Implementation for add cursor feature
-      if (IsKeyPressed(KEY_C) && !IsKeyDown(KEY_LEFT_SHIFT)) {
-        charge_system.addCursor(input_system.getRefMousePos(), 0.05f, cursor_color_list[cursor_color_index], false);
-        cursor_color_index++;
-      }
-      if (input_system.KeysStatus.debug) {
-
         ImGui::Text("Color index: %d", cursor_color_index);
         ImGui::Text("Cursor system global index: %d", Cursor_Point::getGlobalIndex());
+        ImGui::End();
       }
 
-      //Implementation for remove cursor feature
-      if (IsKeyPressed(KEY_C) && IsKeyDown(KEY_LEFT_SHIFT)) {
-        for (const auto &cursor : charge_system.getCursorList()) {
-          if (CheckCollisionPointCircle(input_system.getRefMousePos(), cursor.position, cursor.radius * GLOBAL_SCALE)) {
-            charge_system.removeCursor(cursor.index);
-            cursor_color_index--;
-            break;
+      if (!features.showVectorGrid) {
+        //Implementation for remove cursor feature
+        if (!ImGui::GetIO().WantCaptureMouse)
+          if (IsKeyPressed(KEY_C) && IsKeyDown(KEY_LEFT_SHIFT)) {
+            for (const auto &cursor : charge_system.getCursorList()) {
+              if (CheckCollisionPointCircle(input_system.getRefMousePos(),
+                                            cursor.position,
+                                            cursor.radius * GLOBAL_SCALE)) {
+                charge_system.removeCursor(cursor.index);
+                cursor_color_index--;
+                break;
+              }
+            }
           }
-        }
       }
       if (input_system.KeysStatus.debug) {
+        ImGui::Begin("DEBUG", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::Text("Cursor indexes");
         for (const auto &cursor : charge_system.getCursorList()) {
+          if (!(cursor.index % 12)) {
+            ImGui::NewLine();
+          }
           ImGui::Text("%d ", cursor.index);
           ImGui::SameLine();
         }
         ImGui::End();
       }
 
-      //TODO fix dragging cursor and charge when they are overlapped
-
       //////////////////////////////////Cursor dragging/////////////////////////////////////////
 
-      //Implementation for charges dragging feature
-      //Last_pressed_element solves the problem of fast moving cursor.
-      //By "short-circuiting" the collision check.
-      //If the mouse click is still pressed, then ignore if it is over the charge
-      static size_t cursor_last_pressed_element = -1;
+      if (!features.showVectorGrid) {
+        //Implementation for charges dragging feature
+        //Last_pressed_element solves the problem of fast moving cursor.
+        //By "short-circuiting" the collision check.
+        //If the mouse click is still pressed, then ignore if it is over the charge
+        static size_t cursor_last_pressed_element = -1;
 
-      if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-        if (!Dragging) {
-          if (cursor_last_pressed_element != -1) {
-            charge_system.getCursorList()[cursor_last_pressed_element].position = input_system.getRefMousePos();
-            show_mouse_position_panel(font_Drag, input_system, camera_scalar, camera);
-          } else {
+          if (!charge_dragged) {
+            if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+              if (cursor_last_pressed_element != -1) {
+                charge_system.getCursorList()[cursor_last_pressed_element].position = input_system.getRefMousePos();
+                show_mouse_position_panel(font_Drag, input_system, camera_scalar, camera);
+              } else {
+                for (auto &cursor : charge_system.getCursorList()) {
+                  if (CheckCollisionPointCircle(input_system.getRefMousePos(),
+                                                cursor.position,
+                                                cursor.radius * GLOBAL_SCALE)) {
+                    cursor_dragged = true;
+
+                    if (!ImGui::GetIO().WantCaptureMouse)
+                      cursor.position = input_system.getRefMousePos();
+
+                    show_mouse_position_panel(font_Drag, input_system, camera_scalar, camera);
+
+                    //Find the pressed element index in the vector
+                    for (size_t index = 0; index < charge_system.getCursorList().size(); index++)
+                      if (&cursor == &charge_system.getCursorList()[index])
+                        cursor_last_pressed_element = index;
+
+                    break;
+                  }
+                }
+              }
+            } else {
+              cursor_last_pressed_element = -1;
+              cursor_dragged = false;
+            }
+          }
+        }
+
+
+      ////////////////////////////////////Set main cursor/////////////////////
+      if (charge_system.isChargeSystemValid()) {
+        Color color = {};
+        int indexCursor = -1;
+        if (!ImGui::GetIO().WantCaptureMouse)
+          if (IsKeyPressed(KEY_S)) {
             for (auto &cursor : charge_system.getCursorList()) {
               if (CheckCollisionPointCircle(input_system.getRefMousePos(),
                                             cursor.position,
                                             cursor.radius * GLOBAL_SCALE)) {
-                Dragging = true;
-                cursor.position = input_system.getRefMousePos();
-                show_mouse_position_panel(font_Drag, input_system, camera_scalar, camera);
-
-                //Find the pressed element index in the vector
-                for (size_t index = 0; index < charge_system.getCursorList().size(); index++)
-                  if (&cursor == &charge_system.getCursorList()[index])
-                    cursor_last_pressed_element = index;
-
-                break;
+                indexCursor = cursor.index;
+                color = cursor.color;
               }
             }
+            if (indexCursor != -1) {
+              charge_system.getMainCursor().color = color;
+              charge_system.setMainCursor(indexCursor);
+            }
           }
-        }
-      } else {
-        cursor_last_pressed_element = -1;
-        Dragging = false;
       }
-
-      ////////////////////////////////////Set main cursor/////////////////////
-      int indexCursor = -1;
-      if (IsKeyPressed(KEY_S)) {
-        for (auto &cursor : charge_system.getCursorList()) {
-          if (CheckCollisionPointCircle(input_system.getRefMousePos(),
-                                        cursor.position,
-                                        cursor.radius * GLOBAL_SCALE)) {
-            indexCursor = cursor.index;
-          }
-        }
-        if (indexCursor != -1) {
-          charge_system.setMainCursor(indexCursor);
-        }
-      }
+    }
+    if (!charge_system.isChargeSystemValid() && input_system.KeysStatus.debug) {
+      ImGui::Begin("DEBUG");
+      //ImGui::NewLine();
+      ImGui::TextColored(ImVec4(255, 0, 0, 255), "CHARGE SYSTEM IS INVALID");
+      ImGui::TextColored(ImVec4(255, 0, 0, 255), "MISSING A MAIN CURSOR");
+      ImGui::End();
     }
 
     rlImGuiEnd();

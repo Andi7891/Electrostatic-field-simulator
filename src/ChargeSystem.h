@@ -85,12 +85,15 @@ struct CursorResult {
 };
 
 struct Cursor_Point {
+  //Active is used when a cursor is inside a charge to disable the cursor
+  bool active = true;
   Vector2 e_res_vec{};
   Color color{};
   float radius{};
   Vector2 position{};
   bool mainCursor{};
   int index{};
+  bool contour {};
   std::vector<Vector> vectors;
   std::vector<CursorResult> cursor_result;
 
@@ -98,6 +101,14 @@ struct Cursor_Point {
 
   Cursor_Point() = delete;
   Cursor_Point(Vector2 position, float radius, Color color, bool mainCursor) : position{position},
+                                                                               radius{radius},
+                                                                               color{color},
+                                                                               mainCursor{mainCursor},
+                                                                               e_res_vec{0, 0} {
+    index = global_index;
+    global_index++;
+  }
+  Cursor_Point(Vector2 position, float radius, Color color, bool contour, bool mainCursor) : position{position},
                                                                                radius{radius},
                                                                                color{color},
                                                                                mainCursor{mainCursor},
@@ -132,9 +143,13 @@ class ChargeSystem {
 
   void addCharge(Vector2 position, double charge, Scale scale, float radius, Color color);
   void addCursor(Vector2 position, float radius, Color color, bool mainCursor);
+  void addCursor(Vector2 position, float radius, Color color, bool noContour, bool mainCursor);
+
 
   void removeCharge(int index);
+  void resetCharges();
   void removeCursor(int index);
+  void resetCursors();
 
   void setConstants(double e0, Scale scale, double er);
   Constants &getConstants() { return m_constants; }
@@ -147,6 +162,8 @@ class ChargeSystem {
   //In the case of multiple cursors set as the main cursor, the function will return the first one
   Cursor_Point &getMainCursor();
   void setMainCursor(int index);
+
+  bool isChargeSystemValid();
 
   std::vector<Charge_particle> &getChargesList() { return m_charge_list; }
   std::vector<Cursor_Point> &getCursorList() { return m_cursor_list; }

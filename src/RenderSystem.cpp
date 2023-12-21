@@ -44,7 +44,7 @@ void RenderSystem::render(ChargeSystem &charge_system) const {
   //Draw the charges
   for (const auto &charge : charge_system.getChargesList()) {
     Vector2 charge_position = {charge.position.x * m_scale_factor, -charge.position.y * m_scale_factor};
-    float contourSize = 1.5f;
+    float contourSize = 1.f;
     DrawCircleV(charge_position, charge.radius * m_radius_scale + contourSize, BLACK);
     DrawCircleV(charge_position, charge.radius * m_radius_scale, charge.color);
   }
@@ -59,51 +59,73 @@ void RenderSystem::render(ChargeSystem &charge_system) const {
   }
 
   //Cursor drawing
-  float contourSize = 1.5f;
   for (const auto &cursor : charge_system.getCursorList()) {
+    float contourSize = 1.f;
     Vector2 refined_cursor_position = {cursor.position.x * m_scale_factor, -cursor.position.y * m_scale_factor};
 
-    DrawCircleV(refined_cursor_position, (cursor.radius * m_radius_scale) + contourSize, BLACK);
+    if (!cursor.contour)
+      DrawCircleV(refined_cursor_position, (cursor.radius * m_radius_scale) + contourSize, BLACK);
+
     DrawCircleV(refined_cursor_position, cursor.radius * m_radius_scale, cursor.color);
   }
 }
 
-void RenderSystem::update(KeysStatus &keys_status, ChargeSystem &charge_system, Features &features) {
+void RenderSystem::update(ChargeSystem &charge_system, Features &features) {
   m_vector_render_list.clear();
 
   for (const auto &cursor : charge_system.getCursorList()) {
-    Vector2 refined_cursor_position = {cursor.position.x * m_scale_factor, -cursor.position.y * m_scale_factor};
-    for (const auto &vec : cursor.vectors) {
-      Vector temp_render_vector = {refined_cursor_position, Vector2Add(Vector2Zero(),
-                                                                Vector2{vec.head.x * m_scale_factor,
-                                                                        vec.head.y * -m_scale_factor}), vec.color};
-      m_vector_render_list.push_back(temp_render_vector);
-    }
-    Vector vec_res = {refined_cursor_position, Vector2Add(refined_cursor_position,
-                                                          Vector2{cursor.e_res_vec.x * m_scale_factor,
-                                                                  cursor.e_res_vec.y * -m_scale_factor}), PINK};
-    m_vector_render_list.push_back(vec_res);
-  }
-  //Grid vector
-  /*
-  if (features.showVectorGrid) {
-    static Cursor_Point tempCursor = {Vector2{-10 * m_scale_factor, -10 * m_scale_factor}, 0, Color{0, 0, 0}, false};
-    for (int index_x = 0; index_x < 8; index_x++) {
-      for (int index_y = 0; index_y < 8; index_y++) {
-        //TODO vector grid reimplementation
-        //charge_system.compute_e(tempCursor);
-        Vector tempVec = {tempCursor.position, Vector2Add(tempCursor.position,
-                                                          Vector2{tempCursor.e_res_vec.x * m_scale_factor,
-                                                                  tempCursor.e_res_vec.y * -m_scale_factor}), RED};
-
-        m_vector_render_list.push_back(tempVec);
-
-        tempCursor.position.x = tempCursor.position.x + 10.f * (float) index_y;
+    if (cursor.active) {
+      Vector2 refined_cursor_position = {cursor.position.x * m_scale_factor, -cursor.position.y * m_scale_factor};
+      for (const auto &vec : cursor.vectors) {
+        Vector temp_render_vector = {refined_cursor_position, Vector2Add(Vector2Zero(),
+                                                                         Vector2{vec.head.x * m_scale_factor,
+                                                                                 vec.head.y * -m_scale_factor}),
+                                     vec.color};
+        m_vector_render_list.push_back(temp_render_vector);
       }
-      tempCursor.position.x = -10 * m_scale_factor;
-      tempCursor.position.y = tempCursor.position.y + 10.f * (float) index_x;
+      Vector vec_res = {refined_cursor_position, Vector2Add(refined_cursor_position,
+                                                            Vector2{cursor.e_res_vec.x * m_scale_factor,
+                                                                    cursor.e_res_vec.y * -m_scale_factor}), PINK};
+      m_vector_render_list.push_back(vec_res);
     }
-    tempCursor.position = {-10 * m_scale_factor, -10 * m_scale_factor};
   }
-  */
+
+  //Grid vectors
+  static bool clear = true;
+  static bool grid_done = false;
+  if (features.showVectorGrid) {
+
+    if (clear) {
+      charge_system.resetCharges();
+      charge_system.resetCursors();
+      charge_system.addCharge({0, 0}, 10, NANO, 0.1, RED);
+    }
+
+    float startingX = -20;
+    float startingY = 20;
+
+    if (!grid_done) {
+      Vector2 current_position = {startingX, startingY};
+      for (int index_y = 0; index_y < 9; index_y++) {
+        for (int index_x = 0; index_x < 8; index_x++) {
+          if (!((current_position.x == 0) && (current_position.y == 0))) {
+            charge_system.addCursor(current_position, 0.03, BLACK, false, false);
+          }
+          current_position.x += 5;
+        }
+        charge_system.addCursor(current_position, 0.03, BLACK, false, false);
+        current_position.x = startingX;
+        current_position.y -= 5;
+      }
+    }
+    grid_done = true;
+    clear = false;
+  } else {
+    if (!clear) {
+      charge_system.resetCharges();
+      charge_system.resetCursors();
+    }
+    clear = true;
+    grid_done = false;
+  }
 }
