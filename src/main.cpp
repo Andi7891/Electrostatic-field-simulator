@@ -373,7 +373,26 @@ int main() {
 
     ImGui::Begin("Main", nullptr, windowFlags);
     ImGui::PopStyleVar(3);
-    ImGui::DockSpace(ImGui::GetID("Dockspace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+    ImGuiID dockspace_id = ImGui::GetID("DockSpace");
+    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+    //https://gist.github.com/PossiblyAShrub/0aea9511b84c34e191eaa90dd7225969
+    static auto first_time = true;
+    if (first_time)
+    {
+      first_time = false;
+
+      ImGui::DockBuilderRemoveNode(dockspace_id);
+      ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_PassthruCentralNode & ImGuiDockNodeFlags_DockSpace);
+      ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
+
+      auto dock_id_left = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Left, 0.2f, nullptr, &dockspace_id);
+      auto dock_id_down = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Down, 0.25f, nullptr, &dockspace_id);
+
+      // we now dock our windows into the docking node we made above
+      ImGui::DockBuilderDockWindow("Down", dock_id_down);
+      ImGui::DockBuilderDockWindow("Influences on the main cursor", dock_id_left);
+      ImGui::DockBuilderFinish(dockspace_id);
+    }
     ImGui::End();
 
     //Camera
@@ -671,7 +690,7 @@ int main() {
                                                 cursor.position,
                                                 cursor.radius * GLOBAL_SCALE)) {
                     cursor_dragged = true;
-
+//todo
                     if (!ImGui::GetIO().WantCaptureMouse)
                       cursor.position = input_system.getRefMousePos();
 

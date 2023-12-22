@@ -25,12 +25,18 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="896696ec-5c36-47b2-b92e-0a44dfc29cce" name="Changes" comment="6.0 Multiple cursors support added, set main cursor at runtime, cursors moving.">
+    <list default="true" id="896696ec-5c36-47b2-b92e-0a44dfc29cce" name="Changes" comment="7.0 Vector grid">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ChargeSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/ChargeSystem.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ChargeSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/ChargeSystem.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/RenderSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/RenderSystem.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/RenderSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/RenderSystem.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Punktladung.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Punktladung2.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dependencies/resources/Cousine-Regular.ttf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dependencies/resources/DroidSans.ttf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dependencies/resources/Karla-Regular.ttf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dependencies/resources/ProggyClean.ttf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dependencies/resources/ProggyTiny.ttf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dependencies/resources/Roboto-Medium.ttf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/point_charge.pdf" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -101,12 +107,12 @@
   }
 }</component>
   <component name="RunManager">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+    <configuration name="ESFS" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ESFS" TARGET_NAME="ESFS" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ESFS" RUN_TARGET_NAME="ESFS">
       <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="ESFS" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ESFS" TARGET_NAME="ESFS" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ESFS" RUN_TARGET_NAME="ESFS">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -174,7 +180,8 @@
       <workItem from="1703065006980" duration="3386000" />
       <workItem from="1703092874011" duration="25071000" />
       <workItem from="1703160559737" duration="17770000" />
-      <workItem from="1703182937638" duration="13880000" />
+      <workItem from="1703182937638" duration="15488000" />
+      <workItem from="1703202236539" duration="829000" />
     </task>
     <task id="LOCAL-00001" summary="1.0V">
       <option name="closed" value="true" />
@@ -224,7 +231,15 @@
       <option name="project" value="LOCAL" />
       <updated>1703121519345</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="7.0 Vector grid">
+      <option name="closed" value="true" />
+      <created>1703197906325</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1703197906325</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -258,7 +273,8 @@
     <MESSAGE value="4.0 Add charges and remove charges at runtime." />
     <MESSAGE value="5.0 The last commit before switching to multi-viewport" />
     <MESSAGE value="6.0 Multiple cursors support added, set main cursor at runtime, cursors moving." />
-    <option name="LAST_COMMIT_MESSAGE" value="6.0 Multiple cursors support added, set main cursor at runtime, cursors moving." />
+    <MESSAGE value="7.0 Vector grid" />
+    <option name="LAST_COMMIT_MESSAGE" value="7.0 Vector grid" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
