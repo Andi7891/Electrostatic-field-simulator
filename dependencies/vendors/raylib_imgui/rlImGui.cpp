@@ -439,6 +439,16 @@ float UI_SCALING(float scale) {
   style.GrabRounding      = 0.0f;
   style.TabRounding       = 0.0f;
   style.ScaleAllSizes(scale_ * 0.9f);
+
+  //Custom styling
+  style.DockingSeparatorSize = 10.f;
+  style.FrameRounding = 6.f;
+  style.WindowRounding = 12.f;
+  style.WindowBorderSize = 1.0f;
+  style.WindowPadding.x = 12.f;
+  style.WindowPadding.y = 4.f;
+  style.ScrollbarSize = 3.f;
+
   return scale_;
 }
 

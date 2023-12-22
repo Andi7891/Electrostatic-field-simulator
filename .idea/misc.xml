@@ -3,7 +3,6 @@
   <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
   <component name="CidrRootsConfiguration">
     <excludeRoots>
-      <file path="$PROJECT_DIR$/dependencies/resources" />
       <file path="$PROJECT_DIR$/dependencies/vendors/original" />
     </excludeRoots>
   </component>

@@ -128,13 +128,15 @@ struct Features {
   bool showMoreHelpPanel;
   bool showResultPanel;
   bool showVectorGrid;
+  bool showControlPanel;
   Features() = delete;
-  Features(bool auto_zoom, bool showHelpPanel, bool showMoreHelpPanel, bool showResultPanel, bool showVectorGrid)
+  Features(bool auto_zoom, bool showHelpPanel, bool showMoreHelpPanel, bool showControlPanel, bool showResultPanel, bool showVectorGrid)
       : auto_zoom{auto_zoom},
         showHelpPanel{showHelpPanel},
         showMoreHelpPanel{showMoreHelpPanel},
         showResultPanel{showResultPanel},
-        showVectorGrid{showVectorGrid} {}
+        showVectorGrid{showVectorGrid},
+        showControlPanel{showControlPanel} {}
 };
 #endif
 

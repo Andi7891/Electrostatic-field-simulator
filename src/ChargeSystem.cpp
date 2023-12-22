@@ -133,6 +133,7 @@ void ChargeSystem::removeCursor(int index) {
   }
 }
 
+//Set main cursor and resets all other cursors to normal cursors
 void ChargeSystem::setMainCursor(int index) {
   for (auto &cursor : m_cursor_list) {
     cursor.mainCursor = false;
@@ -141,6 +142,7 @@ void ChargeSystem::setMainCursor(int index) {
   m_cursor_list[index].color = YELLOW;
 }
 
+//The charge system is valid only if at least one cursor is present
 bool ChargeSystem::isChargeSystemValid() {
   if (m_cursor_list.empty()) {
     return false;

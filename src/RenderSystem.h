@@ -26,15 +26,6 @@ struct Vector {
 };
 #endif
 
-#ifndef FEATURES_STRUCT
-#define FEATURES_STRUCT
-struct Features {
-  bool auto_zoom = false;
-  bool showHelpPanel = true;
-  bool showResultPanel = true;
-};
-#endif
-
 class RenderSystem {
  public:
 
