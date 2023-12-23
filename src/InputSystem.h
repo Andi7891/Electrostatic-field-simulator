@@ -14,6 +14,7 @@ struct KeysStatus {
   bool H = false;
   bool debug = false;
   bool space = false;
+  bool verbose = false;
 };
 
 class InputSystem {

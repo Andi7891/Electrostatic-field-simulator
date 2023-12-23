@@ -25,13 +25,14 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="896696ec-5c36-47b2-b92e-0a44dfc29cce" name="Changes" comment="7.1 Folders new hierarchy">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="896696ec-5c36-47b2-b92e-0a44dfc29cce" name="Changes" comment="8.0 Docking layout added">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dependencies/vendors/raylib_imgui/rlImGui.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/dependencies/vendors/raylib_imgui/rlImGui.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dependencies/vendors/raylib_imgui/rlImGui.h" beforeDir="false" afterPath="$PROJECT_DIR$/dependencies/vendors/raylib_imgui/rlImGui.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ChargeSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/ChargeSystem.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ChargeSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/ChargeSystem.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/RenderSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/RenderSystem.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/InputSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/InputSystem.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/RenderSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/RenderSystem.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -187,7 +188,8 @@
       <workItem from="1703182937638" duration="15488000" />
       <workItem from="1703202236539" duration="3112000" />
       <workItem from="1703206113974" duration="312000" />
-      <workItem from="1703206457654" duration="6986000" />
+      <workItem from="1703206457654" duration="8392000" />
+      <workItem from="1703243668840" duration="42753000" />
     </task>
     <task id="LOCAL-00001" summary="1.0V">
       <option name="closed" value="true" />
@@ -253,7 +255,15 @@
       <option name="project" value="LOCAL" />
       <updated>1703203224532</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="8.0 Docking layout added">
+      <option name="closed" value="true" />
+      <created>1703213560426</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1703213560426</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -289,7 +299,8 @@
     <MESSAGE value="6.0 Multiple cursors support added, set main cursor at runtime, cursors moving." />
     <MESSAGE value="7.0 Vector grid" />
     <MESSAGE value="7.1 Folders new hierarchy" />
-    <option name="LAST_COMMIT_MESSAGE" value="7.1 Folders new hierarchy" />
+    <MESSAGE value="8.0 Docking layout added" />
+    <option name="LAST_COMMIT_MESSAGE" value="8.0 Docking layout added" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

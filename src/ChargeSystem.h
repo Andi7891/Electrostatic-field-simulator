@@ -26,23 +26,12 @@ struct Constants {
   float m_er;
   double m_e;
 
-  void update(double e0, double er) {
-    m_e0 = e0;
-    m_er = (float) er;
-  }
+  Constants();
+  Constants(double e0, float er);
 
-  void compute_e() {
-    m_e = m_e0 * m_er;
-  }
-
-  void compute_e(double e0, double er) {
-    m_e0 = e0;
-    m_er = (float) er;
-    m_e = m_e0 * m_er;
-  }
-
-  Constants() = delete;
-  Constants(double e0, float er) : m_e0{e0}, m_er{er} { m_e = m_e0 * m_er; }
+  void update(double e0, double er);
+  void compute_e();
+  void compute_e(double e0, double er);
 };
 
 enum Scale {
@@ -72,6 +61,7 @@ struct Charge_particle {
 };
 
 struct CursorResult {
+  Color particle_color;
   double r;
   double mag_E;
   double e_x;
@@ -143,32 +133,33 @@ struct Features {
 class ChargeSystem {
  public:
 
+  ChargeSystem(double e0, Scale scale, double er);
+  ~ChargeSystem() = default;
+
+  //Charge api
   void addCharge(Vector2 position, double charge, Scale scale, float radius, Color color);
-  void addCursor(Vector2 position, float radius, Color color, bool mainCursor);
-  void addCursor(Vector2 position, float radius, Color color, bool noContour, bool mainCursor);
-
-
+  std::vector<Charge_particle> &getChargesList() { return m_charge_list; }
   void removeCharge(int index);
   void resetCharges();
+
+  //Cursor api
+  void addCursor(Vector2 position, float radius, Color color, bool mainCursor);
+  void addCursor(Vector2 position, float radius, Color color, bool noContour, bool mainCursor);
+  std::vector<Cursor_Point> &getCursorList() { return m_cursor_list; }
+  Cursor_Point &getMainCursor();
+  void setMainCursor(int index);
   void removeCursor(int index);
   void resetCursors();
 
+  //Environment
   void setConstants(double e0, Scale scale, double er);
   Constants &getConstants() { return m_constants; }
+
+  //Calculate electrical field
   void compute_e(Features *features);
-
-  ChargeSystem();
-  ~ChargeSystem() = default;
-
-  //In the case that no cursor is set as the main cursor, then return the first one.
-  //In the case of multiple cursors set as the main cursor, the function will return the first one
-  Cursor_Point &getMainCursor();
-  void setMainCursor(int index);
 
   bool isChargeSystemValid();
 
-  std::vector<Charge_particle> &getChargesList() { return m_charge_list; }
-  std::vector<Cursor_Point> &getCursorList() { return m_cursor_list; }
  private:
   std::vector<Charge_particle> m_charge_list;
   std::vector<Cursor_Point> m_cursor_list;

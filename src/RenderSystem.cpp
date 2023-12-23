@@ -110,6 +110,8 @@ void RenderSystem::update(ChargeSystem &charge_system, Features &features) {
         for (int index_x = 0; index_x < 8; index_x++) {
           if (!((current_position.x == 0) && (current_position.y == 0))) {
             charge_system.addCursor(current_position, 0.03, BLACK, false, false);
+          }else {
+            charge_system.addCursor(current_position, 0.03, YELLOW, false, true);
           }
           current_position.x += 5;
         }

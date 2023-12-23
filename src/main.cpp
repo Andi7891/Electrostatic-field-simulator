@@ -7,25 +7,35 @@
 #include "ChargeSystem.h"
 #include "imgui_internal.h"
 
-void Init(float &currentScale) {
+void Init() {
+  //Window init and configuration
   SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
+
   InitWindow(1, 1, "ESFS");
+  SetTargetFPS(60);
+
+  //Get the monitor current resolution
   int monitor_index = GetCurrentMonitor();
   int monitor_width = GetMonitorWidth(monitor_index);
   int monitor_height = GetMonitorHeight(monitor_index);
+
+  //Size and position for when the window is not maximized
   SetWindowSize((int) ((float) monitor_width / 1.5f), (int) ((float) monitor_height / 1.5f));
   SetWindowPosition((monitor_width / 2) - GetScreenWidth() / 2, (monitor_height / 2) - GetScreenHeight() / 2);
+
+  //Maximize the window for more readable text
   MaximizeWindow();
-  SetTargetFPS(60);
-  currentScale = rlImGuiSetupS(1.f);
+
+  //Setup imgui
+  rlImGuiSetup(true);
 }
 
 void show_debug_panel(InputSystem &input_system, Features &features, float &cameraScalar) {
   auto windowFlags = ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoTitleBar
       | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
   ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-  center = ImVec2{center.x + center.x / 2, center.y - center.y / 2};
-  ImGui::SetNextWindowPos(center, ImGuiCond_Once, ImVec2(0.5f, 0.5f));
+  auto pos = ImVec2{center.x + center.x / 3, center.y - center.y / 4};
+  ImGui::SetNextWindowPos(pos, ImGuiCond_Once, ImVec2(0.5f, 0.5f));
 
   ImGui::Begin("DEBUG", nullptr, windowFlags);
   ImGui::TextColored(ImVec4(0, 255, 0, 255), "WINDOW SPECIFICATIONS");
@@ -36,22 +46,26 @@ void show_debug_panel(InputSystem &input_system, Features &features, float &came
   ImGui::Text("Current window DPI: %.3f %.3f", GetWindowScaleDPI().x, GetWindowScaleDPI().y);
 
   ImGui::Separator();
-  ImGui::TextColored(ImVec4(255, 0, 0, 255), "INPUT SPECIFICATIONS");
-  ImGui::Checkbox("F1", &input_system.KeysStatus.F1);
-  ImGui::SameLine();
-  ImGui::Checkbox("F2", &input_system.KeysStatus.F2);
-  ImGui::SameLine();
-  ImGui::Checkbox("F3", &input_system.KeysStatus.F3);
-  ImGui::SameLine();
-  ImGui::Checkbox("F4", &input_system.KeysStatus.F4);
-  ImGui::SameLine();
-  ImGui::Checkbox("F5", &input_system.KeysStatus.F5);
 
-  ImGui::Checkbox("Auto zoom", &features.auto_zoom);
+  ImGui::TextColored(ImVec4(255, 0, 0, 255), "INPUT SPECIFICATIONS");
+
+  ImGui::Checkbox("Mini result panel (F1)", &input_system.KeysStatus.F1);
+  ImGui::SameLine();
+  ImGui::Checkbox("Control panel (F2)", &input_system.KeysStatus.F2);
+
+  ImGui::Checkbox("Vector grid (F3)", &input_system.KeysStatus.F3);
+  ImGui::SameLine();
+  ImGui::Checkbox("Unbounded (F4)", &input_system.KeysStatus.F4);
+  ImGui::SameLine();
+  ImGui::Checkbox("Unbounded (F5)", &input_system.KeysStatus.F5);
 
   ImGui::Checkbox("Show help panel", &features.showHelpPanel);
-
+  ImGui::Checkbox("Show more help panel", &features.showMoreHelpPanel);
   ImGui::Checkbox("Show result panel", &features.showResultPanel);
+  ImGui::Checkbox("Show debug panel", &input_system.KeysStatus.debug);
+  ImGui::Checkbox("Auto zoom", &features.auto_zoom);
+  ImGui::Checkbox("Verbose mode", &input_system.KeysStatus.verbose);
+  ImGui::Checkbox("Main cursor follow pointer", &input_system.KeysStatus.space);
 
   //3rd Row
   ImGui::Text("Auto zoom scalar");
@@ -79,12 +93,10 @@ void show_cursor_result_panel(Cursor_Point &cursor) {
 void show_control_panel(ChargeSystem &charge_system, Cursor_Point &cursor) {
   auto windowFlags = ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoCollapse
       | ImGuiWindowFlags_AlwaysAutoResize;
-
-  //ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-  //center = ImVec2{center.x + center.x / 2, center.y + center.y / 2};
-  //ImGui::SetNextWindowPos(center, ImGuiCond_Once, ImVec2(0.5f, 0.5f));
-
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 20.f);
   ImGui::Begin("Control Panel", nullptr, windowFlags);
+  ImGui::PopStyleVar();
+
   float cursor_pos[2] = {cursor.position.x, cursor.position.y};
   ImGui::Text("Main cursor position");
   ImGui::SliderFloat2("##Main cursor pos", cursor_pos, -100.f, 100.f);
@@ -165,9 +177,7 @@ void show_control_panel(ChargeSystem &charge_system, Cursor_Point &cursor) {
     index++;
   }
 
-  ImGui::DockBuilderSetNodeSize(ImGui::GetWindowDockID(),
-                                ImGui::CalcWindowNextAutoFitSize(ImGui::GetCurrentWindow()));
-
+  ImGui::DockBuilderSetNodeSize(ImGui::GetWindowDockID(), ImGui::CalcWindowNextAutoFitSize(ImGui::GetCurrentWindow()));
   ImGui::End();
 }
 
@@ -177,18 +187,21 @@ void show_help_panel(Features &features) {
   ImVec2 center = ImGui::GetMainViewport()->GetCenter();
   ImGui::SetNextWindowPos(center, 0, ImVec2(0.5f, 0.5f));
 
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 14.f);
-  ImGui::Begin("Help", nullptr, windowFlags);
-  ImGui::PopStyleVar();
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{15.f, 15.f});
+  ImGui::Begin("Key bindings", nullptr, windowFlags);
+  ImGui::PopStyleVar(2);
 
   ImGui::BeginColumns("Cols", 2, ImGuiOldColumnFlags_GrowParentContentsSize);
 
-  ImGui::Text("F1 for the main cursor short results panel");
+  ImGui::Text("F1 for the main cursor results small panel");
   ImGui::Text("F2 for control panel");
-  ImGui::Text("F3 for vector grid (Incomplete)");
+  ImGui::Text("F3 for vector grid");
   ImGui::Text("F10 for debug panel");
   ImGui::Text("R to toggle the influences on the main cursor panel");
   ImGui::Text("H to toggle the help panel");
+  ImGui::Text("F to toggle the auto zoom");
+  ImGui::Text("V to toggle the charge index viewing");
 
   ImGui::NextColumn();
 
@@ -240,48 +253,40 @@ void show_mouse_position_panel(ImFont *font_Drag, InputSystem &input_system, flo
 void show_results_panel(Features &features, ChargeSystem &charge_system) {
   if (features.showResultPanel) {
     if (charge_system.isChargeSystemValid()) {
-      if (!charge_system.getMainCursor().cursor_result.empty()) {
-        //ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-        //center = ImVec2{center.x / 2.5f, center.y};
-        // ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 20.f);
+      ImGui::Begin("Influences on the main cursor", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+      ImGui::PopStyleVar(1);
+      ImGui::TextColored(ImVec4{253, 249, 0, 255}, "Main cursor");
+      ImGui::Text("Main cursor pos: %.3f %.3f",
+                  charge_system.getMainCursor().position.x,
+                  charge_system.getMainCursor().position.y);
+      ImGui::Text(TextFormat("Resultant vector: (%.4f %.4f)",
+                             charge_system.getMainCursor().e_res_vec.x,
+                             charge_system.getMainCursor().e_res_vec.y));
+      ImGui::Text(TextFormat("Magnitude resultant vector: %.4f",
+                             Vector2Length(charge_system.getMainCursor().e_res_vec)));
 
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 20.f);
-        ImGui::Begin("Influences on the main cursor", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-        ImGui::PopStyleVar();
-
-        ImGui::Text("Main cursor pos: %.3f %.3f",
-                    charge_system.getMainCursor().position.x,
-                    charge_system.getMainCursor().position.y);
-
+      ImGui::Separator();
+      ImGui::Text("Charge influences on the main cursor");
+      int index = 1;
+      for (const auto &charge_result : charge_system.getMainCursor().cursor_result) {
+        auto particle_color =
+            ImColor(charge_result.particle_color.r, charge_result.particle_color.g, charge_result.particle_color.b);
+        ImGui::TextColored(particle_color, "PARTICLE NO %d", index);
+        ImGui::Text(TextFormat("r%d: %lf", index, charge_result.r));
+        ImGui::Text(TextFormat("E%d: %lf", index, charge_result.mag_E));
+        ImGui::Text(TextFormat("e%dx: (%lf %lf)", index, charge_result.e_x, charge_result.e_y));
+        ImGui::Text(TextFormat("E%dx: (%lf %lf)", index, charge_result.E_x, charge_result.E_y));
+        ImGui::Text(TextFormat("Abs_mag_E%d: %lf", index, charge_result.abs_mag_E));
+        ImGui::Text(TextFormat("Pos_E_%d: (%lf %lf)", index, charge_result.pos_E_x, charge_result.pos_E_y));
+        ImGui::Text(TextFormat("Val_Res_E_%d: %lf", index, charge_result.res_E_value));
         ImGui::Separator();
-        ImGui::Text("Charge influences on the main cursor");
-        int index = 1;
-        for (const auto &charge_result : charge_system.getMainCursor().cursor_result) {
-          ImGui::Text("Particle %d", index);
-          ImGui::Text(TextFormat("r%d: %lf", index, charge_result.r));
-          ImGui::Text(TextFormat("E%d: %lf", index, charge_result.mag_E));
-          ImGui::Text(TextFormat("e%dx: (%lf %lf)", index, charge_result.e_x, charge_result.e_y));
-          ImGui::Text(TextFormat("E%dx: (%lf %lf)", index, charge_result.E_x, charge_result.E_y));
-          ImGui::Text(TextFormat("Abs_mag_E%d: %lf", index, charge_result.abs_mag_E));
-          ImGui::Text(TextFormat("Pos_E_%d: (%lf %lf)", index, charge_result.pos_E_x, charge_result.pos_E_y));
-          ImGui::Text(TextFormat("Val_Res_E_%d: %lf", index, charge_result.res_E_value));
-          ImGui::Separator();
-          index++;
-        }
-
-        ImGui::Separator();
-
-        ImGui::Text("Main cursor");
-        ImGui::Text(TextFormat("Resultant vector: (%.4f %.4f)",
-                               charge_system.getMainCursor().e_res_vec.x,
-                               charge_system.getMainCursor().e_res_vec.y));
-        ImGui::Text(TextFormat("Magnitude resultant vector: %.4f",
-                               Vector2Length(charge_system.getMainCursor().e_res_vec)));
-
-        ImGui::DockBuilderSetNodeSize(ImGui::GetWindowDockID(), ImGui::CalcWindowNextAutoFitSize(ImGui::GetCurrentWindow()));
-
-        ImGui::End();
+        index++;
       }
+      //Auto resize in dock
+      ImGui::DockBuilderSetNodeSize(ImGui::GetWindowDockID(),
+                                    ImGui::CalcWindowNextAutoFitSize(ImGui::GetCurrentWindow()));
+      ImGui::End();
     }
   }
 }
@@ -292,15 +297,18 @@ void show_more_help_panel(Features &features) {
   ImVec2 center = ImGui::GetMainViewport()->GetCenter();
   ImGui::SetNextWindowPos(center, 0, ImVec2(0.5f, 0.5f));
 
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 14.f);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{15.f, 15.f});
   ImGui::Begin("More information", nullptr, windowFlags);
-  ImGui::PopStyleVar();
+  ImGui::PopStyleVar(2);
 
   ImGui::BulletText("Data panels can be moved by holding mouse left button");
   ImGui::BulletText("Data panels can be docked by holding shift while holding mouse left button");
-  ImGui::BulletText("Data panels can be undocked by holding mouse left button on the title bar");
+  ImGui::BulletText("Data panels can be undocked by holding mouse left button on the title bar of the panel");
   ImGui::BulletText("CTRL/STRG + mouse left button on any slider in the control panel for precise input");
   ImGui::BulletText("The colour of charges can be changed by clicking on the colour preview");
+  ImGui::BulletText(
+      "The auto zoom feature is enabled by default, but it's disabled when manual zoom is used. Press F to toggle the auto zoom");
   ImGui::BulletText(
       "The simulator needs a main cursor, otherwise the simulation is disabled and all related windows are closed, until a cursor is present");
 
@@ -311,30 +319,144 @@ void show_more_help_panel(Features &features) {
   ImGui::End();
 }
 
+struct Fonts {
+  ImFont *font_drag_panel = nullptr;
+  ImFont *font_error_panel = nullptr;
+  ImFont *font_normal_panel = nullptr;
+};
+
+float calculate_scaling(float scale) {
+  int screen_width = GetScreenWidth();
+  int screen_height = GetScreenHeight();
+
+  float target_x_fhd_ratio = scale / 1920;
+  float target_y_fhd_ratio = scale / 1080;
+
+  float current_x_ratio = scale / (float) screen_width;
+  float current_y_ratio = scale / (float) screen_height;
+
+  float scalingFactor_X = target_x_fhd_ratio / current_x_ratio;
+  float scalingFactor_Y = target_y_fhd_ratio / current_y_ratio;
+
+  scale *= scalingFactor_X * 0.5f + scalingFactor_Y * 0.5f;
+
+  //printf("Current scale: %f | Target_X_ratio: %f Target_Y_ratio: %f | Current_X_ratio: %f Current_Y_ratio: %f\n",
+  //scale, target_x_fhd_ratio, target_y_fhd_ratio, current_x_ratio, current_y_ratio);
+
+  return scale;
+}
+
+void gui_scale(float base_scale) {
+  static float previous_scale = base_scale;
+  if (base_scale != previous_scale) {
+    previous_scale = base_scale;
+
+    ImGuiIO &io = ImGui::GetIO();
+
+    //Get current style
+    ImGuiStyle &style = ImGui::GetStyle();
+    style = ImGuiStyle();
+    style.WindowBorderSize = 1.0f;
+    style.ChildBorderSize = 1.0f;
+    style.PopupBorderSize = 1.0f;
+    style.FrameBorderSize = 1.0f;
+    style.TabBorderSize = 1.0f;
+    style.WindowRounding = 0.0f;
+    style.ChildRounding = 0.0f;
+    style.PopupRounding = 0.0f;
+    style.FrameRounding = 0.0f;
+    style.ScrollbarRounding = 0.0f;
+    style.GrabRounding = 0.0f;
+    style.TabRounding = 0.0f;
+
+    //Apply scale
+    style.ScaleAllSizes(base_scale);
+
+    //Constrain some values for fix style
+    style.DockingSeparatorSize = 10.f;
+    style.FrameRounding = 6.f;
+    style.WindowRounding = 12.f;
+    style.WindowBorderSize = 1.0f;
+    style.WindowPadding.x = 12.f;
+    style.WindowPadding.y = 4.f;
+    style.ScrollbarSize = 3.f;
+  }
+}
+
+void load_fonts(Fonts &fonts, float base_scale) {
+  static float previous_scale = 0;
+  if (base_scale != previous_scale) {
+    previous_scale = base_scale;
+
+    rlImGuiSetContext();
+
+    ImGuiIO &io = ImGui::GetIO();
+    io.Fonts->Clear();
+
+    //Default font
+    fonts.font_normal_panel = io.Fonts->AddFontFromFileTTF(R"(C:\Windows\Fonts\Arial.ttf)", base_scale * 15);
+    fonts.font_drag_panel = io.Fonts->AddFontFromFileTTF(R"(C:\Windows\Fonts\Arial.ttf)", base_scale * 20);
+    fonts.font_error_panel = io.Fonts->AddFontFromFileTTF(R"(C:\Windows\Fonts\Arial.ttf)", base_scale * 35);
+
+    if (fonts.font_drag_panel == nullptr)
+      fonts.font_drag_panel = ImGui::GetDefaultFont();
+
+    if (fonts.font_error_panel == nullptr)
+      fonts.font_error_panel = ImGui::GetDefaultFont();
+
+    if (fonts.font_normal_panel == nullptr)
+      fonts.font_normal_panel = ImGui::GetDefaultFont();
+
+    rlImGuiReloadFonts();
+  }
+}
+
+float calculateAutoZoomScalar(float scale) {
+  int screen_width = GetScreenWidth();
+  int screen_height = GetScreenHeight();
+
+  float target_x_fhd_ratio = scale / 1920;
+  float target_y_fhd_ratio = scale / 1080;
+
+  float current_x_ratio = scale / (float) screen_width;
+  float current_y_ratio = scale / (float) screen_height;
+
+  float scalingFactor_X = target_x_fhd_ratio / current_x_ratio;
+  float scalingFactor_Y = target_y_fhd_ratio / current_y_ratio;
+
+  scale *= scalingFactor_X * 0.5f + scalingFactor_Y * 0.5f;
+
+  return scale;
+}
+
 ////////////////////////////////////////////////////ENTRY_POINT///////////////////////////////////////////////
+
 int main() {
-  float currentScale = 0.f;
-  Init(currentScale);
-  float newScale;
+  Init();
 
-  ImFont *font_Drag = nullptr;
+  Fonts fonts;
 
+  float current_scale;
   float GLOBAL_SCALE = 10.f;
+
+  //Setup all the systems
   InputSystem input_system(GLOBAL_SCALE);
   RenderSystem render_system(GLOBAL_SCALE, GLOBAL_SCALE * 8.f);
   GridSystem grid_system(50, (int) GLOBAL_SCALE * 5, BLACK, BLACK, BLACK);
-  ChargeSystem charge_system;
+  ChargeSystem charge_system(8.854817178, PICO, 1);
 
-  charge_system.setConstants(8.854817178, PICO, 1);
+  //Set default values for the features
+  Features features = {true, true, false, true, true, false};
 
-  Features features = {false, true, false, true, true, false};
-  float camera_scalar = 5.f;
+  float defaultCameraZoom = 1.5f;
+  float currentCameraZoom = defaultCameraZoom;
 
+  //Camera init
   Camera2D camera = {0};
   camera.offset = {(float) GetScreenWidth() / 2.0f, (float) GetScreenHeight() / 2.0f};
   camera.target = {0.0f, 0.0f};
   camera.rotation = 0.0f;
-  camera.zoom = ImClamp(((float) GetScreenHeight() / (float) GetScreenWidth()) * camera_scalar, 1.0f, 10.f);
+  camera.zoom = defaultCameraZoom;
 
   //ImGui terminology
   //https://github.com/ocornut/imgui/wiki/Glossary
@@ -343,32 +465,53 @@ int main() {
   while (!WindowShouldClose()) {
     RenderSystem::newFrame();
 
-    //Font auto scaling
-    rlImGuiSetContext();
-    newScale = ((float) GetScreenHeight() / (float) GetScreenWidth()) * 4.0f;
-    if (newScale != currentScale) {
-      UI_SCALING(newScale);
-      currentScale = newScale;
-      ImGuiIO &io = ImGui::GetIO();
-      io.Fonts->Clear();
-      ImFont *font = io.Fonts->AddFontFromFileTTF(R"(C:\Windows\Fonts\Arial.ttf)", newScale * 12);
-      font_Drag = io.Fonts->AddFontFromFileTTF(R"(C:\Windows\Fonts\Arial.ttf)", newScale * 14);
-      if (font_Drag == nullptr)
-        font_Drag = ImGui::GetDefaultFont();
-      if (font == nullptr)
-        io.Fonts->AddFontDefault();
+    //todo check if ignore the charge inside of the cursor works all the time
+    //////////////////////////////////////////Font auto scaling////////////////////////////////////////////
 
-      rlImGuiReloadFonts();
+    current_scale = calculate_scaling(1.5f);
+    gui_scale(current_scale);
+    load_fonts(fonts, current_scale);
+
+    ///////////////////////////////////////////////Camera//////////////////////////////////////////////
+
+    //Calculate the offset for camera to maintain the origin in center
+    camera.offset = {(float) GetScreenWidth() / 2.0f, (float) GetScreenHeight() / 2.0f};
+
+    //Manual zoom deactivates the auto zoom feature
+    if (IsKeyDown(KEY_LEFT_CONTROL) && (GetMouseWheelMove() != 0.f)) {
+      currentCameraZoom = camera.zoom;
+      currentCameraZoom -= ((float) GetMouseWheelMove() * 0.125f);
+      features.auto_zoom = false;
     }
+
+    //Activate auto zoom feature
+    if (IsKeyPressed(KEY_F))
+      features.auto_zoom = !features.auto_zoom;
+
+    //Apply auto zoom scalar or the manual one
+    if (features.auto_zoom) {
+      camera.zoom = defaultCameraZoom * calculateAutoZoomScalar(defaultCameraZoom);
+      currentCameraZoom = camera.zoom;
+    } else
+      camera.zoom = currentCameraZoom;
+
+    //Camera zoom clamping
+    if (camera.zoom > 10.0f) camera.zoom = 10.0f;
+    else if (camera.zoom < 0.5f) camera.zoom = 0.5f;
+
+    ///////////////////////////////////////////Docking layout//////////////////////////////////////////////
 
     //ImGui rendering
     rlImGuiBegin();
+
+    //Dock builder example
+    //https://gist.github.com/PossiblyAShrub/0aea9511b84c34e191eaa90dd7225969
 
     const ImGuiViewport *viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
     ImGui::SetNextWindowSize(viewport->WorkSize);
     ImGui::SetNextWindowViewport(viewport->ID);
-    ImGuiWindowFlags windowFlags =
+    ImGuiWindowFlags dock_windowFlags =
         ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoDocking
             | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
             | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground;
@@ -377,13 +520,11 @@ int main() {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-    ImGui::Begin("Main", nullptr, windowFlags);
+    ImGui::Begin("Main", nullptr, dock_windowFlags);
     ImGui::PopStyleVar(3);
 
     ImGuiID dockspace_id = ImGui::GetID("DockSpace");
     ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
-
-    //https://gist.github.com/PossiblyAShrub/0aea9511b84c34e191eaa90dd7225969
 
     static auto first_time = true;
     if (first_time) {
@@ -402,20 +543,7 @@ int main() {
     }
     ImGui::End();
 
-    //Camera
-    //Auto zoom feature
-    camera.offset = {(float) GetScreenWidth() / 2.0f, (float) GetScreenHeight() / 2.0f};
-
-    if (features.auto_zoom) {
-      camera.zoom = ImClamp(((float) GetScreenHeight() / (float) GetScreenWidth()) * camera_scalar, 1.0f, 10.f);
-    } else {
-      if (IsKeyDown(KEY_LEFT_CONTROL))
-        camera.zoom += ((float) GetMouseWheelMove() * 0.125f);
-    }
-
-    //Camera zoom clamping
-    if (camera.zoom > 10.0f) camera.zoom = 10.0f;
-    else if (camera.zoom < 0.5f) camera.zoom = 0.5f;
+    /////////////////////////////////////////////Input system and keys state control////////////////////////
 
     //Update the input system
     input_system.update_input(camera.zoom);
@@ -439,6 +567,11 @@ int main() {
       input_system.KeysStatus.H = false;
     }
 
+    //Toggling verbose mode
+    if (IsKeyPressed(KEY_V)) {
+      input_system.KeysStatus.verbose = !input_system.KeysStatus.verbose;
+    }
+
     //Toggling cursor info window
     if (input_system.KeysStatus.F1)
       if (charge_system.isChargeSystemValid())
@@ -450,15 +583,18 @@ int main() {
       input_system.KeysStatus.F2 = false;
     }
 
+    //A way of resetting color index is not great, but it is working
+    static bool resetColorIndex = false;
     //Toggling the vector grid window
     if (input_system.KeysStatus.F3) {
       features.showVectorGrid = !features.showVectorGrid;
       input_system.KeysStatus.F3 = false;
+      resetColorIndex = true;
     }
 
     //Toggling the debugging window
     if (input_system.KeysStatus.debug)
-      show_debug_panel(input_system, features, camera_scalar);
+      show_debug_panel(input_system, features, currentCameraZoom);
 
     //Toggling the help window
     if (features.showHelpPanel) {
@@ -479,11 +615,6 @@ int main() {
       if (charge_system.isChargeSystemValid())
         show_control_panel(charge_system, charge_system.getMainCursor());
 
-    //Render ray-lib
-    BeginMode2D(camera);
-    //Render grid
-    grid_system.render();
-
     //Disable the cursor if it is inside a charge
     for (auto &cursor : charge_system.getCursorList()) {
       for (auto &charge : charge_system.getChargesList())
@@ -497,21 +628,49 @@ int main() {
         }
     }
 
+    //Render ray-lib
+    BeginMode2D(camera);
+    //Render grid
+    grid_system.render();
     //Starts the rendering if the help panel is closed
-    if (!features.showHelpPanel) {
+    if (!features.showHelpPanel && !features.showMoreHelpPanel) {
       charge_system.compute_e(&features);
       render_system.update(charge_system, features);
       render_system.render(charge_system);
     }
     EndMode2D();
 
+    static int cursors_color_index = 0;
+    static int charges_color_index = 0;
+
     //Check for inputs when the help panel is closed only
     if (!features.showHelpPanel && !features.showMoreHelpPanel) {
+
+      ////////////////////////////////Verbose mode for charges//////////////////////////
+
+      if (charge_system.isChargeSystemValid() && input_system.KeysStatus.verbose) {
+        for (const auto &charge : charge_system.getChargesList()) {
+          ImVec2 origin = {(float) GetScreenWidth() / 2, (float) GetScreenHeight() / 2};
+          ImVec2 windowPos = ImVec2{origin.x + GLOBAL_SCALE * camera.zoom * charge.position.x,
+                                    origin.y - GLOBAL_SCALE * camera.zoom * charge.position.y};
+          ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, ImVec2{0.5f, 0.5f});
+          auto windowFlags =
+              ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoCollapse
+                  | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBackground
+                  | ImGuiWindowFlags_NoDecoration;
+
+          ImGui::PushFont(fonts.font_drag_panel);
+          ImGui::Begin(TextFormat("##Charge index %d", charge.index), nullptr, windowFlags);
+          ImVec4 textColor = {0, 0, 0, 255}; //Black
+          ImGui::TextColored(textColor, "%d", charge.index + 1);
+          ImGui::End();
+          ImGui::PopFont();
+        }
+      }
 
       ///////////////////////////////////////////////////Charges/////////////////////////////////////////////
 
       //Common variables for add/remove charge feature
-      static int charges_color_index = 0;
       static std::vector<Color>
           charge_color_list = {Color(RED), Color(BLUE), Color(ORANGE), Color(GRAY), Color(GREEN), Color(MAROON)};
 
@@ -531,12 +690,12 @@ int main() {
       }
 
       //Implementation for add charges feature
-      if (!ImGui::GetIO().WantCaptureMouse)
+      if (!ImGui::GetIO().WantCaptureMouse) {
         if (IsKeyPressed(KEY_Q) && !IsKeyDown(KEY_LEFT_SHIFT)) {
           charge_system.addCharge(input_system.getRefMousePos(), 10, NANO, 0.1, charge_color_list[charges_color_index]);
           charges_color_index++;
         }
-
+      }
       if (input_system.KeysStatus.debug) {
         ImGui::Begin("DEBUG", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::Text("Color index: %d", charges_color_index);
@@ -545,7 +704,7 @@ int main() {
       }
 
       //Implementation for remove charges feature
-      if (!ImGui::GetIO().WantCaptureMouse)
+      if (!ImGui::GetIO().WantCaptureMouse) {
         if (IsKeyPressed(KEY_Q) && IsKeyDown(KEY_LEFT_SHIFT)) {
           for (const auto &charge : charge_system.getChargesList()) {
             if (CheckCollisionPointCircle(input_system.getRefMousePos(),
@@ -557,6 +716,8 @@ int main() {
             }
           }
         }
+      }
+
       if (input_system.KeysStatus.debug) {
         ImGui::Begin("DEBUG", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::Text("Charges indexes");
@@ -580,28 +741,24 @@ int main() {
       static bool charge_dragged = false;
       static bool cursor_dragged = false;
 
+      //todo block movement under the panels
       if (!cursor_dragged) {
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
           if (charge_last_pressed_element != -1) {
             charge_system.getChargesList()[charge_last_pressed_element].position = input_system.getRefMousePos();
-            show_mouse_position_panel(font_Drag, input_system, camera_scalar, camera);
+            show_mouse_position_panel(fonts.font_drag_panel, input_system, currentCameraZoom, camera);
           } else {
             for (auto &charge : charge_system.getChargesList()) {
               if (CheckCollisionPointCircle(input_system.getRefMousePos(),
                                             charge.position,
                                             charge.radius * GLOBAL_SCALE)) {
                 charge_dragged = true;
-
-                if (!ImGui::GetIO().WantCaptureMouse)
-                  charge.position = input_system.getRefMousePos();
-
-                show_mouse_position_panel(font_Drag, input_system, camera_scalar, camera);
-
+                charge.position = input_system.getRefMousePos();
+                show_mouse_position_panel(fonts.font_drag_panel, input_system, currentCameraZoom, camera);
                 //Find the pressed element index in the vector
                 for (size_t index = 0; index < charge_system.getChargesList().size(); index++)
                   if (&charge == &charge_system.getChargesList()[index])
                     charge_last_pressed_element = index;
-
                 break;
               }
             }
@@ -613,22 +770,19 @@ int main() {
         }
       }
 
-
       //////////////////////////////////////////Cursor///////////////////////////////////////////
-
-      static int cursor_color_index = 0;
 
       static std::vector<Color>
           cursor_color_list = {Color(RED), Color(BLUE), Color(ORANGE), Color(GRAY), Color(GREEN), Color(MAROON)};
 
       if (!features.showVectorGrid) {
         //If the color index is less than 0, clamp it to 0
-        if (cursor_color_index < 0)
-          cursor_color_index = 0;
+        if (cursors_color_index < 0)
+          cursors_color_index = 0;
 
         //Reset the color index when there are no more colors
-        if (cursor_color_index == cursor_color_list.size())
-          cursor_color_index = 0;
+        if (cursors_color_index == cursor_color_list.size())
+          cursors_color_index = 0;
       }
       if (input_system.KeysStatus.debug) {
         ImGui::Begin("DEBUG", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
@@ -642,14 +796,17 @@ int main() {
         //Implementation for add cursor feature
         if (!ImGui::GetIO().WantCaptureMouse)
           if (IsKeyPressed(KEY_C) && !IsKeyDown(KEY_LEFT_SHIFT)) {
-            charge_system.addCursor(input_system.getRefMousePos(), 0.05f, cursor_color_list[cursor_color_index], false);
-            cursor_color_index++;
+            charge_system.addCursor(input_system.getRefMousePos(),
+                                    0.05f,
+                                    cursor_color_list[cursors_color_index],
+                                    false);
+            cursors_color_index++;
           }
       }
 
       if (input_system.KeysStatus.debug) {
         ImGui::Begin("DEBUG", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-        ImGui::Text("Color index: %d", cursor_color_index);
+        ImGui::Text("Color index: %d", cursors_color_index);
         ImGui::Text("Cursor system global index: %d", Cursor_Point::getGlobalIndex());
         ImGui::End();
       }
@@ -663,7 +820,7 @@ int main() {
                                             cursor.position,
                                             cursor.radius * GLOBAL_SCALE)) {
                 charge_system.removeCursor(cursor.index);
-                cursor_color_index--;
+                cursors_color_index--;
                 break;
               }
             }
@@ -684,48 +841,44 @@ int main() {
 
       //////////////////////////////////Cursor dragging/////////////////////////////////////////
 
-      if (!features.showVectorGrid) {
-        //Implementation for charges dragging feature
-        //Last_pressed_element solves the problem of fast moving cursor.
-        //By "short-circuiting" the collision check.
-        //If the mouse click is still pressed, then ignore if it is over the charge
-        static size_t cursor_last_pressed_element = -1;
+      //Implementation for charges dragging feature
+      //Last_pressed_element solves the problem of fast moving cursor.
+      //By "short-circuiting" the collision check.
+      //If the mouse click is still pressed, then ignore if it is over the charge
+      static size_t cursor_last_pressed_element = -1;
 
-        if (!charge_dragged) {
-          if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-            if (cursor_last_pressed_element != -1) {
-              charge_system.getCursorList()[cursor_last_pressed_element].position = input_system.getRefMousePos();
-              show_mouse_position_panel(font_Drag, input_system, camera_scalar, camera);
-            } else {
-              for (auto &cursor : charge_system.getCursorList()) {
-                if (CheckCollisionPointCircle(input_system.getRefMousePos(),
-                                              cursor.position,
-                                              cursor.radius * GLOBAL_SCALE)) {
-                  cursor_dragged = true;
-//todo
-                  if (!ImGui::GetIO().WantCaptureMouse)
-                    cursor.position = input_system.getRefMousePos();
+      if (!charge_dragged) {
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+          if (cursor_last_pressed_element != -1) {
+            charge_system.getCursorList()[cursor_last_pressed_element].position = input_system.getRefMousePos();
+            show_mouse_position_panel(fonts.font_drag_panel, input_system, currentCameraZoom, camera);
+          } else {
+            for (auto &cursor : charge_system.getCursorList()) {
+              if (CheckCollisionPointCircle(input_system.getRefMousePos(),
+                                            cursor.position,
+                                            cursor.radius * GLOBAL_SCALE)) {
+                cursor_dragged = true;
+                cursor.position = input_system.getRefMousePos();
+                show_mouse_position_panel(fonts.font_drag_panel, input_system, currentCameraZoom, camera);
 
-                  show_mouse_position_panel(font_Drag, input_system, camera_scalar, camera);
+                //Find the pressed element index in the vector
+                for (size_t index = 0; index < charge_system.getCursorList().size(); index++)
+                  if (&cursor == &charge_system.getCursorList()[index])
+                    cursor_last_pressed_element = index;
 
-                  //Find the pressed element index in the vector
-                  for (size_t index = 0; index < charge_system.getCursorList().size(); index++)
-                    if (&cursor == &charge_system.getCursorList()[index])
-                      cursor_last_pressed_element = index;
-
-                  break;
-                }
+                break;
               }
             }
-          } else {
-            cursor_last_pressed_element = -1;
-            cursor_dragged = false;
           }
+        } else {
+          cursor_last_pressed_element = -1;
+          cursor_dragged = false;
         }
       }
 
 
-      ////////////////////////////////////Set main cursor/////////////////////
+      ///////////////////////////////////////Set main cursor/////////////////////////
+
       if (charge_system.isChargeSystemValid()) {
         Color color = {};
         int indexCursor = -1;
@@ -748,10 +901,40 @@ int main() {
     }
     if (!charge_system.isChargeSystemValid() && input_system.KeysStatus.debug) {
       ImGui::Begin("DEBUG");
-      //ImGui::NewLine();
       ImGui::TextColored(ImVec4(255, 0, 0, 255), "CHARGE SYSTEM IS INVALID");
       ImGui::TextColored(ImVec4(255, 0, 0, 255), "MISSING A MAIN CURSOR");
       ImGui::End();
+    }
+
+    //////////////////////////////////////Invalid state message/////////////////////
+
+    if (!charge_system.isChargeSystemValid() && !features.showHelpPanel && !features.showMoreHelpPanel) {
+      ImVec2 windowPos = ImVec2{static_cast<float>(GetScreenWidth() / 2.0), 100.f};
+      ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, ImVec2{0.5f, 1.f});
+
+      auto windowFlags =
+          ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoCollapse
+              | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBackground
+              | ImGuiWindowFlags_NoDecoration;
+
+      ImVec4 textColor = {255, 0, 0, 255};
+
+      ImGui::Begin("##InvalidState", nullptr, windowFlags);
+      ImGui::PushFont(fonts.font_error_panel);
+      ImGui::TextColored(textColor, "Missing main cursor");
+      ImGui::PopFont();
+      ImGui::End();
+    }
+
+    //////////////////////////////////////Reset color indexes///////////////////////
+    if (resetColorIndex) {
+      cursors_color_index = 0;
+      charges_color_index = 0;
+
+      if (features.showVectorGrid)
+        charges_color_index = 1;
+
+      resetColorIndex = false;
     }
 
     rlImGuiEnd();

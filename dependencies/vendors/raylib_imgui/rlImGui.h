@@ -50,16 +50,14 @@ extern "C" {
 /// Calls ImGui_ImplRaylib_Init and sets the theme. Will install Font awesome by default
 /// </summary>
 /// <param name="darkTheme">when true(default) the dark theme is used, when false the light theme is used</param>
-void rlImGuiSetup(bool darkTheme, float scale);
-float rlImGuiSetupS(float scale);
+void rlImGuiSetup(bool darkTheme);
+
 void rlImGuiSetContext();
 /// <summary>
 /// Starts a new ImGui Frame
 /// Calls ImGui_ImplRaylib_NewFrame, ImGui_ImplRaylib_ProcessEvents, and ImGui::NewFrame together
 /// </summary>
 void rlImGuiBegin();
-
-float UI_SCALING(float scale);
 
 /// <summary>
 /// Ends an ImGui frame and submits all ImGui drawing to raylib for processing.

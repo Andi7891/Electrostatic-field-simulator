@@ -22,8 +22,9 @@ std::vector<CursorResult> Compute_Vectors_E(Cursor_Point &cursor,
                                             Constants &constants) {
   std::vector<CursorResult> cursor_results = {};
 
-  if (m_charge_list.empty()) {
+  if (m_charge_list.empty() || !cursor.active) {
     cursor.e_res_vec = Vector2Zero();
+    //cursor.cursor_result.clear();
     cursor.vectors.clear();
     return cursor_results;
   }
@@ -51,9 +52,9 @@ std::vector<CursorResult> Compute_Vectors_E(Cursor_Point &cursor,
     result.pos_E_x = result.E_x + cursor.position.x;
     result.pos_E_y = result.E_y + cursor.position.y;
 
-    cursor.vectors.push_back(Vector{cursor.position,
-                                    Vector2{static_cast<float>(result.pos_E_x), static_cast<float>(result.pos_E_y)},
-                                    charge.color});
+    cursor.vectors.emplace_back(Vector{cursor.position,
+                                       Vector2{static_cast<float>(result.pos_E_x), static_cast<float>(result.pos_E_y)},
+                                       charge.color});
 
     resVEC.x += static_cast<float>(result.E_x);
     resVEC.y += static_cast<float>(result.E_y);
@@ -61,7 +62,9 @@ std::vector<CursorResult> Compute_Vectors_E(Cursor_Point &cursor,
     result.res_E_value = sqrt(pow(result.E_x, 2) + pow(result.E_y, 2));
 
     val_resVec = Vector2Add(val_resVec, Vector2{static_cast<float>(result.E_x), static_cast<float>(result.E_y)});
-    cursor_results.push_back(result);
+
+    result.particle_color = charge.color;
+    cursor_results.emplace_back(result);
   }
   cursor.e_res_vec = val_resVec;
 
@@ -70,12 +73,14 @@ std::vector<CursorResult> Compute_Vectors_E(Cursor_Point &cursor,
 
 void ChargeSystem::compute_e(Features *features) {
   for (auto &cursor : m_cursor_list) {
-    if (cursor.active)
-      cursor.cursor_result = Compute_Vectors_E(cursor, m_charge_list, m_constants);
+    cursor.cursor_result = Compute_Vectors_E(cursor, m_charge_list, m_constants);
   }
 }
 
-ChargeSystem::ChargeSystem() : m_constants{0.0, 0.0} {}
+ChargeSystem::ChargeSystem(double e0, Scale scale, double er) {
+  applyScale(e0, scale);
+  m_constants.compute_e(e0, er);
+}
 
 void ChargeSystem::addCharge(Vector2 position, double charge, Scale scale, float radius, Color color) {
   m_charge_list.emplace_back(position, charge, scale, radius, color);
@@ -94,17 +99,19 @@ void ChargeSystem::addCursor(Vector2 position, float radius, Color color, bool n
   m_cursor_list.emplace_back(position, radius, color, no_contour, mainCursor);
 }
 
+//In the case that no cursor is set as the main cursor, then return the first one.
+//In the case of multiple cursors set as the main cursor, the function will return the first one
 Cursor_Point &ChargeSystem::getMainCursor() {
-    int index = 0;
-    for (const auto &cursor : m_cursor_list) {
-      if (cursor.mainCursor) {
-        return m_cursor_list[index];
-      }
-      index++;
+  int index = 0;
+  for (const auto &cursor : m_cursor_list) {
+    if (cursor.mainCursor) {
+      return m_cursor_list[index];
     }
-    //If no cursor is set as the main cursor, then return the first one
-    m_cursor_list[0].color = YELLOW;
-    return m_cursor_list[0];
+    index++;
+  }
+  //If no cursor is set as the main cursor, then return the first one
+  m_cursor_list[0].color = YELLOW;
+  return m_cursor_list[0];
 }
 
 void ChargeSystem::removeCharge(int index) {
@@ -160,3 +167,22 @@ void ChargeSystem::resetCursors() {
   m_cursor_list.clear();
   Cursor_Point::getGlobalIndex() = 0;
 }
+
+void Constants::update(double e0, double er) {
+  m_e0 = e0;
+  m_er = (float) er;
+}
+
+void Constants::compute_e() {
+  m_e = m_e0 * m_er;
+}
+
+void Constants::compute_e(double e0, double er) {
+  m_e0 = e0;
+  m_er = (float) er;
+  m_e = m_e0 * m_er;
+}
+
+Constants::Constants() : m_e0{0}, m_er{0}, m_e{0} {}
+
+Constants::Constants(double e0, float er) : m_e0{e0}, m_er{er} { m_e = m_e0 * m_er; }

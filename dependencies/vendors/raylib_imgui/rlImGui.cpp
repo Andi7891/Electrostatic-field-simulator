@@ -395,64 +395,26 @@ static void SetupGlobals() {
 
 void rlImGuiBeginInitImGui() {
   SetupGlobals();
-  // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
+
   GlobalContext = ImGui::CreateContext(nullptr);
   SetupKeymap();
 
   ImGuiIO &io = ImGui::GetIO();
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-  //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;    // Enable Gamepad Controls
-  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
-  //io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
-  //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+  //No save file
   io.IniFilename = nullptr;
+
+  //Hold shift for docking
   io.ConfigDockingWithShift = true;
 
-  io.Fonts->Clear();
-  float baseSize = 20.f;
-  float dpiScale = (GetWindowScaleDPI().x == GetWindowScaleDPI().y) ? GetWindowScaleDPI().x : 1.f;
-  float resScale = (float) GetScreenWidth() / (float) GetScreenHeight();
-  float fontScale = baseSize * resScale * dpiScale;
-  ImFont *font = io.Fonts->AddFontFromFileTTF(R"(C:\Windows\Fonts\Arial.ttf)", fontScale);
-
-  if (font == nullptr)
-    io.Fonts->AddFontDefault();
+  //Required
+  io.Fonts->AddFontDefault();
 }
 
-float UI_SCALING(float scale) {
-  float scale_ = scale;
-  ImGuiIO &io = ImGui::GetIO();
-
-  ImGuiStyle &style = ImGui::GetStyle();
-  style = ImGuiStyle();
-  style.WindowBorderSize = 1.0f;
-  style.ChildBorderSize  = 1.0f;
-  style.PopupBorderSize  = 1.0f;
-  style.FrameBorderSize  = 1.0f;
-  style.TabBorderSize    = 1.0f;
-  style.WindowRounding    = 0.0f;
-  style.ChildRounding     = 0.0f;
-  style.PopupRounding     = 0.0f;
-  style.FrameRounding     = 0.0f;
-  style.ScrollbarRounding = 0.0f;
-  style.GrabRounding      = 0.0f;
-  style.TabRounding       = 0.0f;
-  style.ScaleAllSizes(scale_ * 0.9f);
-
-  //Custom styling
-  style.DockingSeparatorSize = 10.f;
-  style.FrameRounding = 6.f;
-  style.WindowRounding = 12.f;
-  style.WindowBorderSize = 1.0f;
-  style.WindowPadding.x = 12.f;
-  style.WindowPadding.y = 4.f;
-  style.ScrollbarSize = 3.f;
-
-  return scale_;
-}
-
-void rlImGuiSetup(bool dark, float scale) {
+void rlImGuiSetup(bool dark) {
   rlImGuiBeginInitImGui();
 
   if (dark)
@@ -460,22 +422,11 @@ void rlImGuiSetup(bool dark, float scale) {
   else
     ImGui::StyleColorsLight();
 
-  UI_SCALING(1 + scale);
   rlImGuiEndInitImGui();
 }
 
 void rlImGuiSetContext() {
   ImGui::SetCurrentContext(GlobalContext);
-}
-
-float rlImGuiSetupS(float scale) {
-  rlImGuiBeginInitImGui();
-
-  ImGui::StyleColorsDark();
-
-  float currentScale = UI_SCALING(1 + scale);
-  rlImGuiEndInitImGui();
-  return currentScale;
 }
 
 void rlImGuiReloadFonts() {
