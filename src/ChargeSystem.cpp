@@ -19,7 +19,7 @@ int Cursor_Point::global_index = 0;
 
 std::vector<CursorResult> Compute_Vectors_E(Cursor_Point &cursor,
                                             std::vector<Charge_particle> &m_charge_list,
-                                            Constants &constants) {
+                                            Constants &constants, bool onlyResultantVec) {
   std::vector<CursorResult> cursor_results = {};
 
   if (m_charge_list.empty() || !cursor.active) {
@@ -52,9 +52,11 @@ std::vector<CursorResult> Compute_Vectors_E(Cursor_Point &cursor,
     result.pos_E_x = result.E_x + cursor.position.x;
     result.pos_E_y = result.E_y + cursor.position.y;
 
-    cursor.vectors.emplace_back(Vector{cursor.position,
-                                       Vector2{static_cast<float>(result.pos_E_x), static_cast<float>(result.pos_E_y)},
-                                       charge.color});
+    if (!onlyResultantVec) {
+      cursor.vectors.emplace_back(Vector{cursor.position,
+                                         Vector2{static_cast<float>(result.pos_E_x), static_cast<float>(result.pos_E_y)},
+                                         charge.color});
+    }
 
     resVEC.x += static_cast<float>(result.E_x);
     resVEC.y += static_cast<float>(result.E_y);
@@ -73,7 +75,7 @@ std::vector<CursorResult> Compute_Vectors_E(Cursor_Point &cursor,
 
 void ChargeSystem::compute_e(Features *features) {
   for (auto &cursor : m_cursor_list) {
-    cursor.cursor_result = Compute_Vectors_E(cursor, m_charge_list, m_constants);
+    cursor.cursor_result = Compute_Vectors_E(cursor, m_charge_list, m_constants,  features->onlyResultantVector);
   }
 }
 

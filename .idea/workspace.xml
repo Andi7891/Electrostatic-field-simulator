@@ -25,14 +25,12 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="896696ec-5c36-47b2-b92e-0a44dfc29cce" name="Changes" comment="8.0 Docking layout added">
+    <list default="true" id="896696ec-5c36-47b2-b92e-0a44dfc29cce" name="Changes" comment="9.0 New scaling system, charge index verbose">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dependencies/vendors/raylib_imgui/rlImGui.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/dependencies/vendors/raylib_imgui/rlImGui.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dependencies/vendors/raylib_imgui/rlImGui.h" beforeDir="false" afterPath="$PROJECT_DIR$/dependencies/vendors/raylib_imgui/rlImGui.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ChargeSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/ChargeSystem.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ChargeSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/ChargeSystem.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/InputSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/InputSystem.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/InputSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/InputSystem.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/RenderSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/RenderSystem.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -43,7 +41,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -91,33 +89,40 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/vlada/Desktop/EE_1/ESFS&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;CPPToolchains&quot;,
-    &quot;settings.editor.splitter.proportion&quot;: &quot;0.23800905&quot;,
-    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
-    &quot;two.files.diff.last.used.file&quot;: &quot;C:/Users/vlada/Desktop/EE_1/ESFS/src/ChargeSystem.cpp&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "CMake Application.ESFS.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/vlada/Desktop/EE_1/ESFS",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "CMakeSettings",
+    "settings.editor.splitter.proportion": "0.23800905",
+    "structure.view.defaults.are.configured": "true",
+    "two.files.diff.last.used.file": "C:/Users/vlada/Desktop/EE_1/ESFS/src/ChargeSystem.cpp",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
-    <configuration name="ESFS" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ESFS" TARGET_NAME="ESFS" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ESFS" RUN_TARGET_NAME="ESFS">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ESFS" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ESFS" TARGET_NAME="ESFS" CONFIG_NAME="Release" RUN_TARGET_PROJECT_NAME="ESFS" RUN_TARGET_NAME="ESFS">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -189,7 +194,16 @@
       <workItem from="1703202236539" duration="3112000" />
       <workItem from="1703206113974" duration="312000" />
       <workItem from="1703206457654" duration="8392000" />
-      <workItem from="1703243668840" duration="42753000" />
+      <workItem from="1703243668840" duration="43023000" />
+      <workItem from="1703304238926" duration="144000" />
+      <workItem from="1703304388705" duration="59000" />
+      <workItem from="1703330213864" duration="734000" />
+      <workItem from="1703331455889" duration="1714000" />
+      <workItem from="1703339128863" duration="8784000" />
+      <workItem from="1703354005258" duration="2140000" />
+      <workItem from="1703357756478" duration="415000" />
+      <workItem from="1703369950255" duration="36000" />
+      <workItem from="1703369999731" duration="4127000" />
     </task>
     <task id="LOCAL-00001" summary="1.0V">
       <option name="closed" value="true" />
@@ -263,17 +277,24 @@
       <option name="project" value="LOCAL" />
       <updated>1703213560426</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="9.0 New scaling system, charge index verbose">
+      <option name="closed" value="true" />
+      <created>1703304084034</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1703304084034</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VCPKGProject">
-    <isAutomaticEditVcpkgJson value="false" />
     <isAutomaticCheckingOnLaunch value="false" />
     <isAutomaticFoundErrors value="true" />
-    <isAutomaticFoundErrors value="true" />
+    <isAutomaticReloadCMake value="true" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
@@ -300,7 +321,8 @@
     <MESSAGE value="7.0 Vector grid" />
     <MESSAGE value="7.1 Folders new hierarchy" />
     <MESSAGE value="8.0 Docking layout added" />
-    <option name="LAST_COMMIT_MESSAGE" value="8.0 Docking layout added" />
+    <MESSAGE value="9.0 New scaling system, charge index verbose" />
+    <option name="LAST_COMMIT_MESSAGE" value="9.0 New scaling system, charge index verbose" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -12,6 +12,9 @@ struct KeysStatus {
   bool F5 = false;
   bool R = false;
   bool H = false;
+  bool E = false;
+  bool A = false;
+  bool D = false;
   bool debug = false;
   bool space = false;
   bool verbose = false;

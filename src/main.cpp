@@ -34,8 +34,8 @@ void show_debug_panel(InputSystem &input_system, Features &features, float &came
   auto windowFlags = ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoTitleBar
       | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
   ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-  auto pos = ImVec2{center.x + center.x / 3, center.y - center.y / 4};
-  ImGui::SetNextWindowPos(pos, ImGuiCond_Once, ImVec2(0.5f, 0.5f));
+  auto pos = ImVec2{center.x, center.y};
+  ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
   ImGui::Begin("DEBUG", nullptr, windowFlags);
   ImGui::TextColored(ImVec4(0, 255, 0, 255), "WINDOW SPECIFICATIONS");
@@ -66,7 +66,7 @@ void show_debug_panel(InputSystem &input_system, Features &features, float &came
   ImGui::Checkbox("Auto zoom", &features.auto_zoom);
   ImGui::Checkbox("Verbose mode", &input_system.KeysStatus.verbose);
   ImGui::Checkbox("Main cursor follow pointer", &input_system.KeysStatus.space);
-
+  ImGui::Checkbox("Show only resultant vector", &input_system.KeysStatus.E);
   //3rd Row
   ImGui::Text("Auto zoom scalar");
   ImGui::SliderFloat("##Auto zoom scalar slider", &cameraScalar, 1.0f, 10.f);
@@ -202,6 +202,7 @@ void show_help_panel(Features &features) {
   ImGui::Text("H to toggle the help panel");
   ImGui::Text("F to toggle the auto zoom");
   ImGui::Text("V to toggle the charge index viewing");
+  ImGui::Text("E to toggle only the resultant vector mode");
 
   ImGui::NextColumn();
 
@@ -209,12 +210,14 @@ void show_help_panel(Features &features) {
   ImGui::Text("Hold MOUSE LEFT BUTTON for dragging charges/cursors");
 
   ImGui::Separator();
+  ImGui::Text("A to remove all charges");
   ImGui::Text("Press Q for adding charges");
   ImGui::Text("SHIFT + Q for removing charges");
 
   ImGui::Separator();
   ImGui::Text("S to set the main cursor");
   ImGui::Text("SPACE to toggle main cursor moving");
+  ImGui::Text("D to remove all cursors");
   ImGui::Text("Press C for adding cursor");
   ImGui::Text("SHIFT + C for removing cursor");
 
@@ -256,6 +259,7 @@ void show_results_panel(Features &features, ChargeSystem &charge_system) {
       ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 20.f);
       ImGui::Begin("Influences on the main cursor", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
       ImGui::PopStyleVar(1);
+
       ImGui::TextColored(ImVec4{253, 249, 0, 255}, "Main cursor");
       ImGui::Text("Main cursor pos: %.3f %.3f",
                   charge_system.getMainCursor().position.x,
@@ -446,7 +450,7 @@ int main() {
   ChargeSystem charge_system(8.854817178, PICO, 1);
 
   //Set default values for the features
-  Features features = {true, true, false, true, true, false};
+  Features features = {true, true, false, true, true, false, false};
 
   float defaultCameraZoom = 1.5f;
   float currentCameraZoom = defaultCameraZoom;
@@ -461,11 +465,12 @@ int main() {
   //ImGui terminology
   //https://github.com/ocornut/imgui/wiki/Glossary
 
+  bool dragEnable = false;
+
   //Main loop
   while (!WindowShouldClose()) {
     RenderSystem::newFrame();
 
-    //todo check if ignore the charge inside of the cursor works all the time
     //////////////////////////////////////////Font auto scaling////////////////////////////////////////////
 
     current_scale = calculate_scaling(1.5f);
@@ -499,10 +504,10 @@ int main() {
     if (camera.zoom > 10.0f) camera.zoom = 10.0f;
     else if (camera.zoom < 0.5f) camera.zoom = 0.5f;
 
-    ///////////////////////////////////////////Docking layout//////////////////////////////////////////////
-
     //ImGui rendering
     rlImGuiBegin();
+
+    ///////////////////////////////////////////Docking layout//////////////////////////////////////////////
 
     //Dock builder example
     //https://gist.github.com/PossiblyAShrub/0aea9511b84c34e191eaa90dd7225969
@@ -524,7 +529,7 @@ int main() {
     ImGui::PopStyleVar(3);
 
     ImGuiID dockspace_id = ImGui::GetID("DockSpace");
-    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_NoResize);
 
     static auto first_time = true;
     if (first_time) {
@@ -555,13 +560,13 @@ int main() {
           charge_system.getMainCursor().position = input_system.getRefMousePos();
     }
 
-    //Toggling value window
+    //Toggling result panel
     if (input_system.KeysStatus.R) {
       features.showResultPanel = !features.showResultPanel;
       input_system.KeysStatus.R = false;
     }
 
-    //Toggling help window
+    //Toggling help panel
     if (input_system.KeysStatus.H) {
       features.showHelpPanel = !features.showHelpPanel;
       input_system.KeysStatus.H = false;
@@ -572,82 +577,85 @@ int main() {
       input_system.KeysStatus.verbose = !input_system.KeysStatus.verbose;
     }
 
-    //Toggling cursor info window
+    //Toggling mini results panel
     if (input_system.KeysStatus.F1)
       if (charge_system.isChargeSystemValid())
         show_cursor_result_panel(charge_system.getMainCursor());
 
-    //Toggling control panel window
+    //Toggling control panel
     if (input_system.KeysStatus.F2) {
       features.showControlPanel = !features.showControlPanel;
       input_system.KeysStatus.F2 = false;
     }
 
-    //A way of resetting color index is not great, but it is working
     static bool resetColorIndex = false;
-    //Toggling the vector grid window
+    //Toggling the vector grid mode
     if (input_system.KeysStatus.F3) {
       features.showVectorGrid = !features.showVectorGrid;
       input_system.KeysStatus.F3 = false;
       resetColorIndex = true;
     }
 
-    //Toggling the debugging window
+    //Toggling the debugging panel
     if (input_system.KeysStatus.debug)
       show_debug_panel(input_system, features, currentCameraZoom);
 
-    //Toggling the help window
+    //Toggling the help panel
     if (features.showHelpPanel) {
       show_help_panel(features);
       if (input_system.KeysStatus.F2)
         input_system.KeysStatus.F2 = !input_system.KeysStatus.F2;
     }
 
-    //Toggling the more help window
+    //Toggling the more help panel
     if (features.showMoreHelpPanel)
       show_more_help_panel(features);
 
-    //Toggling the result window
+    //Toggling the result panel
     if (features.showResultPanel && !features.showHelpPanel && !features.showMoreHelpPanel)
       show_results_panel(features, charge_system);
 
+    //Toggling the control panel
     if (features.showControlPanel && !features.showHelpPanel && !features.showMoreHelpPanel)
       if (charge_system.isChargeSystemValid())
         show_control_panel(charge_system, charge_system.getMainCursor());
+
+    //Toggling the resultant vector only mode
+    if (input_system.KeysStatus.E) {
+      features.onlyResultantVector = !features.onlyResultantVector;
+      input_system.KeysStatus.E = false;
+    }
+
+    //Remove all charges
+    if (input_system.KeysStatus.A) {
+      charge_system.resetCharges();
+      input_system.KeysStatus.A = false;
+    }
+
+    //Remove all cursors
+    if (input_system.KeysStatus.D) {
+      charge_system.resetCursors();
+      input_system.KeysStatus.D = false;
+    }
 
     //Disable the cursor if it is inside a charge
     for (auto &cursor : charge_system.getCursorList()) {
       for (auto &charge : charge_system.getChargesList())
         if (CheckCollisionCircles(cursor.position,
-                                  (cursor.radius + 0.25f * cursor.radius) * GLOBAL_SCALE,
+                                  (cursor.radius + (1.5f * cursor.radius)) * GLOBAL_SCALE,
                                   charge.position,
                                   charge.radius * GLOBAL_SCALE)) {
           cursor.active = false;
+          break;
         } else {
           cursor.active = true;
         }
     }
 
-    //Render ray-lib
-    BeginMode2D(camera);
-    //Render grid
-    grid_system.render();
-    //Starts the rendering if the help panel is closed
-    if (!features.showHelpPanel && !features.showMoreHelpPanel) {
-      charge_system.compute_e(&features);
-      render_system.update(charge_system, features);
-      render_system.render(charge_system);
-    }
-    EndMode2D();
-
-    static int cursors_color_index = 0;
-    static int charges_color_index = 0;
+    ////////////////////////////////////Verbose mode for charges///////////////////////////////////////
 
     //Check for inputs when the help panel is closed only
     if (!features.showHelpPanel && !features.showMoreHelpPanel) {
-
-      ////////////////////////////////Verbose mode for charges//////////////////////////
-
       if (charge_system.isChargeSystemValid() && input_system.KeysStatus.verbose) {
         for (const auto &charge : charge_system.getChargesList()) {
           ImVec2 origin = {(float) GetScreenWidth() / 2, (float) GetScreenHeight() / 2};
@@ -667,9 +675,31 @@ int main() {
           ImGui::PopFont();
         }
       }
+    }
 
-      ///////////////////////////////////////////////////Charges/////////////////////////////////////////////
+    ////////////////////////////////Rendering///////////////////////////////////
 
+    //Render ray-lib
+    BeginMode2D(camera);
+    //Render grid
+    grid_system.render();
+    //Starts the rendering if the help panel is closed
+    if (!features.showHelpPanel && !features.showMoreHelpPanel) {
+      charge_system.compute_e(&features);
+      render_system.update(charge_system, features);
+      render_system.render(charge_system);
+    }
+    EndMode2D();
+
+    /////////////////////////////////////////Charges and cursors color index////////////////////////
+
+    static int cursors_color_index = 0;
+    static int charges_color_index = 0;
+
+    ///////////////////////////////////////////////////Charges/////////////////////////////////////////////
+
+    //Check for inputs when the help panel is closed only
+    if (!features.showHelpPanel && !features.showMoreHelpPanel) {
       //Common variables for add/remove charge feature
       static std::vector<Color>
           charge_color_list = {Color(RED), Color(BLUE), Color(ORANGE), Color(GRAY), Color(GREEN), Color(MAROON)};
@@ -741,35 +771,33 @@ int main() {
       static bool charge_dragged = false;
       static bool cursor_dragged = false;
 
-      //todo block movement under the panels
-      if (!cursor_dragged) {
-        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-          if (charge_last_pressed_element != -1) {
-            charge_system.getChargesList()[charge_last_pressed_element].position = input_system.getRefMousePos();
-            show_mouse_position_panel(fonts.font_drag_panel, input_system, currentCameraZoom, camera);
-          } else {
-            for (auto &charge : charge_system.getChargesList()) {
-              if (CheckCollisionPointCircle(input_system.getRefMousePos(),
-                                            charge.position,
-                                            charge.radius * GLOBAL_SCALE)) {
-                charge_dragged = true;
-                charge.position = input_system.getRefMousePos();
-                show_mouse_position_panel(fonts.font_drag_panel, input_system, currentCameraZoom, camera);
-                //Find the pressed element index in the vector
-                for (size_t index = 0; index < charge_system.getChargesList().size(); index++)
-                  if (&charge == &charge_system.getChargesList()[index])
-                    charge_last_pressed_element = index;
-                break;
+        if (!cursor_dragged) {
+          if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+            if (charge_last_pressed_element != -1) {
+              charge_system.getChargesList()[charge_last_pressed_element].position = input_system.getRefMousePos();
+              show_mouse_position_panel(fonts.font_drag_panel, input_system, currentCameraZoom, camera);
+            } else {
+              for (auto &charge : charge_system.getChargesList()) {
+                if (CheckCollisionPointCircle(input_system.getRefMousePos(),
+                                              charge.position,
+                                              charge.radius * GLOBAL_SCALE)) {
+                  charge_dragged = true;
+                  charge.position = input_system.getRefMousePos();
+                  show_mouse_position_panel(fonts.font_drag_panel, input_system, currentCameraZoom, camera);
+                  //Find the pressed element index in the vector
+                  for (size_t index = 0; index < charge_system.getChargesList().size(); index++)
+                    if (&charge == &charge_system.getChargesList()[index])
+                      charge_last_pressed_element = index;
+                  break;
+                }
               }
             }
+          } else {
+            charge_last_pressed_element = -1;
+            charge_dragged = false;
           }
-
-        } else {
-          charge_last_pressed_element = -1;
-          charge_dragged = false;
         }
-      }
-
+        
       //////////////////////////////////////////Cursor///////////////////////////////////////////
 
       static std::vector<Color>
@@ -826,6 +854,7 @@ int main() {
             }
           }
       }
+
       if (input_system.KeysStatus.debug) {
         ImGui::Begin("DEBUG", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::Text("Cursor indexes");
@@ -847,34 +876,34 @@ int main() {
       //If the mouse click is still pressed, then ignore if it is over the charge
       static size_t cursor_last_pressed_element = -1;
 
-      if (!charge_dragged) {
-        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-          if (cursor_last_pressed_element != -1) {
-            charge_system.getCursorList()[cursor_last_pressed_element].position = input_system.getRefMousePos();
-            show_mouse_position_panel(fonts.font_drag_panel, input_system, currentCameraZoom, camera);
-          } else {
-            for (auto &cursor : charge_system.getCursorList()) {
-              if (CheckCollisionPointCircle(input_system.getRefMousePos(),
-                                            cursor.position,
-                                            cursor.radius * GLOBAL_SCALE)) {
-                cursor_dragged = true;
-                cursor.position = input_system.getRefMousePos();
-                show_mouse_position_panel(fonts.font_drag_panel, input_system, currentCameraZoom, camera);
+        if (!charge_dragged) {
+          if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+            if (cursor_last_pressed_element != -1) {
+              charge_system.getCursorList()[cursor_last_pressed_element].position = input_system.getRefMousePos();
+              show_mouse_position_panel(fonts.font_drag_panel, input_system, currentCameraZoom, camera);
+            } else {
+              for (auto &cursor : charge_system.getCursorList()) {
+                if (CheckCollisionPointCircle(input_system.getRefMousePos(),
+                                              cursor.position,
+                                              cursor.radius * GLOBAL_SCALE)) {
+                  cursor_dragged = true;
+                  cursor.position = input_system.getRefMousePos();
+                  show_mouse_position_panel(fonts.font_drag_panel, input_system, currentCameraZoom, camera);
 
-                //Find the pressed element index in the vector
-                for (size_t index = 0; index < charge_system.getCursorList().size(); index++)
-                  if (&cursor == &charge_system.getCursorList()[index])
-                    cursor_last_pressed_element = index;
+                  //Find the pressed element index in the vector
+                  for (size_t index = 0; index < charge_system.getCursorList().size(); index++)
+                    if (&cursor == &charge_system.getCursorList()[index])
+                      cursor_last_pressed_element = index;
 
-                break;
+                  break;
+                }
               }
             }
+          } else {
+            cursor_last_pressed_element = -1;
+            cursor_dragged = false;
           }
-        } else {
-          cursor_last_pressed_element = -1;
-          cursor_dragged = false;
         }
-      }
 
 
       ///////////////////////////////////////Set main cursor/////////////////////////
@@ -927,6 +956,7 @@ int main() {
     }
 
     //////////////////////////////////////Reset color indexes///////////////////////
+
     if (resetColorIndex) {
       cursors_color_index = 0;
       charges_color_index = 0;

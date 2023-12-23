@@ -119,14 +119,16 @@ struct Features {
   bool showResultPanel;
   bool showVectorGrid;
   bool showControlPanel;
+  bool onlyResultantVector;
   Features() = delete;
-  Features(bool auto_zoom, bool showHelpPanel, bool showMoreHelpPanel, bool showControlPanel, bool showResultPanel, bool showVectorGrid)
+  Features(bool auto_zoom, bool showHelpPanel, bool showMoreHelpPanel, bool showControlPanel, bool showResultPanel, bool showVectorGrid, bool onlyResultantVector)
       : auto_zoom{auto_zoom},
         showHelpPanel{showHelpPanel},
         showMoreHelpPanel{showMoreHelpPanel},
         showResultPanel{showResultPanel},
         showVectorGrid{showVectorGrid},
-        showControlPanel{showControlPanel} {}
+        showControlPanel{showControlPanel},
+        onlyResultantVector{onlyResultantVector} {}
 };
 #endif
 

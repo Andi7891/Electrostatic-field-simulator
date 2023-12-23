@@ -10,6 +10,9 @@ void InputSystem::update_input(float cameraZoom) {
   if (IsKeyPressed(KEY_F10)) KeysStatus.debug = !KeysStatus.debug;
   if (IsKeyPressed(KEY_R)) KeysStatus.R = !KeysStatus.R;
   if (IsKeyPressed(KEY_H)) KeysStatus.H = !KeysStatus.H;
+  if (IsKeyPressed(KEY_E)) KeysStatus.E = !KeysStatus.E;
+  if (IsKeyPressed(KEY_A)) KeysStatus.A = !KeysStatus.A;
+  if (IsKeyPressed(KEY_D)) KeysStatus.D = !KeysStatus.D;
 
   int windowWidth = GetScreenWidth();
   int windowHeight = GetScreenHeight();
