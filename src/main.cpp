@@ -467,7 +467,6 @@ int main() {
 
   bool dragEnable = false;
 
-  //Main loop
   while (!WindowShouldClose()) {
     RenderSystem::newFrame();
 
@@ -589,6 +588,9 @@ int main() {
     }
 
     static bool resetColorIndex = false;
+    static bool resetChargeColorIndex = false;
+    static bool resetCursorColorIndex = false;
+
     //Toggling the vector grid mode
     if (input_system.KeysStatus.F3) {
       features.showVectorGrid = !features.showVectorGrid;
@@ -629,12 +631,14 @@ int main() {
     //Remove all charges
     if (input_system.KeysStatus.A) {
       charge_system.resetCharges();
+      resetChargeColorIndex = true;
       input_system.KeysStatus.A = false;
     }
 
     //Remove all cursors
     if (input_system.KeysStatus.D) {
       charge_system.resetCursors();
+      resetCursorColorIndex = true;
       input_system.KeysStatus.D = false;
     }
 
@@ -771,6 +775,7 @@ int main() {
       static bool charge_dragged = false;
       static bool cursor_dragged = false;
 
+      if(!ImGui::GetIO().WantCaptureMouse)
         if (!cursor_dragged) {
           if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
             if (charge_last_pressed_element != -1) {
@@ -876,6 +881,7 @@ int main() {
       //If the mouse click is still pressed, then ignore if it is over the charge
       static size_t cursor_last_pressed_element = -1;
 
+      if(!ImGui::GetIO().WantCaptureMouse)
         if (!charge_dragged) {
           if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
             if (cursor_last_pressed_element != -1) {
@@ -965,6 +971,18 @@ int main() {
         charges_color_index = 1;
 
       resetColorIndex = false;
+    }
+
+    if (resetChargeColorIndex) {
+      charges_color_index = 0;
+      if (features.showVectorGrid)
+        charges_color_index = 1;
+      resetChargeColorIndex = false;
+    }
+
+    if (resetCursorColorIndex) {
+      cursors_color_index = 0;
+      resetCursorColorIndex = false;
     }
 
     rlImGuiEnd();

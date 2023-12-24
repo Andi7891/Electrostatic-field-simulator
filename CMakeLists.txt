@@ -19,6 +19,8 @@ ENDIF (CMAKE_BUILD_TYPE MATCHES "Debug")
 
 IF(CMAKE_BUILD_TYPE MATCHES "Release")
     set(CONSOLE "WIN32")
+    #set(CMAKE_CXX_FLAGS_RELEASE  "")
+    #set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -DNDEBUG -std=c++20 -march=native -fpic -ftree-vectorize")
 ENDIF (CMAKE_BUILD_TYPE MATCHES "Release")
 
 add_executable(ESFS "${CONSOLE}"
@@ -53,7 +55,7 @@ add_executable(ESFS "${CONSOLE}"
         src/ChargeSystem.cpp
         src/ChargeSystem.h
         src/GridSystem.cpp
-        src/GridSystem.h)
+        src/GridSystem.h dependencies/resources/Icon/icon.rc)
 
 target_include_directories(ESFS PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vendors/raylib/include")
 target_link_directories(ESFS PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vendors/raylib/lib")
