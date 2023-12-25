@@ -669,7 +669,7 @@ int main() {
           auto windowFlags =
               ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoCollapse
                   | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBackground
-                  | ImGuiWindowFlags_NoDecoration;
+                  | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMouseInputs;
 
           ImGui::PushFont(fonts.font_drag_panel);
           ImGui::Begin(TextFormat("##Charge index %d", charge.index), nullptr, windowFlags);
@@ -802,7 +802,7 @@ int main() {
             charge_dragged = false;
           }
         }
-        
+
       //////////////////////////////////////////Cursor///////////////////////////////////////////
 
       static std::vector<Color>
