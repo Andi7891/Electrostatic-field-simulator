@@ -1,18 +1,18 @@
 #include "InputSystem.h"
 
 void InputSystem::update_input(float cameraZoom) {
-  if (IsKeyPressed(KEY_F1)) KeysStatus.F1 = !KeysStatus.F1;
-  if (IsKeyPressed(KEY_F2)) KeysStatus.F2 = !KeysStatus.F2;
-  if (IsKeyPressed(KEY_F3)) KeysStatus.F3 = !KeysStatus.F3;
-  if (IsKeyPressed(KEY_F4)) KeysStatus.F4 = !KeysStatus.F4;
-  if (IsKeyPressed(KEY_F5)) KeysStatus.F5 = !KeysStatus.F5;
-  if (IsKeyPressed(KEY_SPACE)) KeysStatus.space = !KeysStatus.space;
-  if (IsKeyPressed(KEY_F10)) KeysStatus.debug = !KeysStatus.debug;
-  if (IsKeyPressed(KEY_R)) KeysStatus.R = !KeysStatus.R;
-  if (IsKeyPressed(KEY_H)) KeysStatus.H = !KeysStatus.H;
-  if (IsKeyPressed(KEY_E)) KeysStatus.E = !KeysStatus.E;
-  if (IsKeyPressed(KEY_A)) KeysStatus.A = !KeysStatus.A;
-  if (IsKeyPressed(KEY_D)) KeysStatus.D = !KeysStatus.D;
+  if (IsKeyPressed(KEY_F1)) keysStatus.F1 = !keysStatus.F1;
+  if (IsKeyPressed(KEY_F2)) keysStatus.F2 = !keysStatus.F2;
+  if (IsKeyPressed(KEY_F3)) keysStatus.F3 = !keysStatus.F3;
+  if (IsKeyPressed(KEY_F4)) keysStatus.F4 = !keysStatus.F4;
+  if (IsKeyPressed(KEY_F5)) keysStatus.F5 = !keysStatus.F5;
+  if (IsKeyPressed(KEY_SPACE)) keysStatus.space = !keysStatus.space;
+  if (IsKeyPressed(KEY_F10)) keysStatus.debug = !keysStatus.debug;
+  if (IsKeyPressed(KEY_R)) keysStatus.R = !keysStatus.R;
+  if (IsKeyPressed(KEY_H)) keysStatus.H = !keysStatus.H;
+  if (IsKeyPressed(KEY_E)) keysStatus.E = !keysStatus.E;
+  if (IsKeyPressed(KEY_A)) keysStatus.A = !keysStatus.A;
+  if (IsKeyPressed(KEY_D)) keysStatus.D = !keysStatus.D;
 
   int windowWidth = GetScreenWidth();
   int windowHeight = GetScreenHeight();

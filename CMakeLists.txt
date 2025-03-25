@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.26)
+
 project(ESFS)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -8,16 +9,13 @@ include_directories(dependencies/vendors/imgui/backends)
 include_directories(dependencies/vendors/imgui/misc/cpp)
 include_directories(dependencies/vendors/imgui/misc/freetype)
 include_directories(dependencies/vendors/imgui/misc/single_file)
-include_directories(dependencies/vendors/raylib)
-include_directories(dependencies/vendors/raylib/include)
-include_directories(dependencies/vendors/raylib_imgui)
-include_directories(dependencies/vendors/raylib/lib)
+include_directories(dependencies/vendors/raylib/src)
 
-IF(CMAKE_BUILD_TYPE MATCHES "Debug")
+IF (CMAKE_BUILD_TYPE MATCHES "Debug")
     set(CONSOLE "")
 ENDIF (CMAKE_BUILD_TYPE MATCHES "Debug")
 
-IF(CMAKE_BUILD_TYPE MATCHES "Release")
+IF (CMAKE_BUILD_TYPE MATCHES "Release")
     set(CONSOLE "WIN32")
     #set(CMAKE_CXX_FLAGS_RELEASE  "")
     #set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -DNDEBUG -std=c++20 -march=native -fpic -ftree-vectorize")
@@ -40,9 +38,9 @@ add_executable(ESFS "${CONSOLE}"
         dependencies/vendors/imgui/imstb_rectpack.h
         dependencies/vendors/imgui/imstb_textedit.h
         dependencies/vendors/imgui/imstb_truetype.h
-        dependencies/vendors/raylib/include/raylib.h
-        dependencies/vendors/raylib/include/raymath.h
-        dependencies/vendors/raylib/include/rlgl.h
+        dependencies/vendors/raylib/src/raylib.h
+        dependencies/vendors/raylib/src/raymath.h
+        dependencies/vendors/raylib/src/rlgl.h
         dependencies/vendors/raylib_imgui/imgui_impl_raylib.h
         dependencies/vendors/raylib_imgui/rlImGui.cpp
         dependencies/vendors/raylib_imgui/rlImGui.h
@@ -57,6 +55,11 @@ add_executable(ESFS "${CONSOLE}"
         src/GridSystem.cpp
         src/GridSystem.h dependencies/resources/Icon/icon.rc)
 
-target_include_directories(ESFS PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vendors/raylib/include")
-target_link_directories(ESFS PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vendors/raylib/lib")
-target_link_libraries(ESFS -static -lraylib -lopengl32 -lgdi32 -lwinmm)
+target_include_directories(ESFS PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vendors/raylib/src")
+target_include_directories(ESFS PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vendors/raylib_imgui")
+target_link_directories(ESFS PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vendors")
+target_link_libraries(ESFS -lraylib
+        # -lopengl32
+        #-lgdi32
+        #-lwinmm
+)
