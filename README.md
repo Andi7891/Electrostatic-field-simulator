@@ -1,2 +1,1 @@
-The project supports only windows_platform because of the font loading that has a windows path set. It can be changed.
-For any other platform unix based (macOS, linux) a shortcut would be to use WINE emulator.
+This side project, developed over the course of a few weeks in my spare time, began as a surprise for one of my university professors. Inspired by a simulator he had created in Excel, I used it as a foundation and built an enhanced, more capable version.
